@@ -1,0 +1,1366 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="고객관리">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#121212">
+<title>AI 고객관리 자동화</title>
+<style>
+/* 다크 몰입형 테마 — 근흑색 표면 + 기능적 녹색 포인트 + 알약형 버튼 */
+:root{
+  --bg:#121212;--card:#181818;--surface:#1f1f1f;--raised:#252525;
+  --ink:#ffffff;--muted:#b3b3b3;--soft:#cbcbcb;--line:rgba(255,255,255,.08);--outline:#7c7c7c;
+  --green:#1ed760;--green-d:#1ed760;--green-l:rgba(30,215,96,.14);
+  --gold:#ffa42b;--gold-l:rgba(255,164,43,.14);
+  --red:#f3727f;--red-l:rgba(243,114,127,.14);--amber:#ffa42b;--amber-l:rgba(255,164,43,.14);
+  --blue:#539df5;--blue-l:rgba(83,157,245,.14);--gray-l:#1f1f1f;
+  --pill:9999px;--shadow:rgba(0,0,0,.3) 0 8px 8px;--shadow-heavy:rgba(0,0,0,.5) 0 8px 24px;
+  --inset:rgb(18,18,18) 0 1px 0,rgb(124,124,124) 0 0 0 1px inset;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Helvetica Neue",Helvetica,Arial,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;font-size:16px;line-height:1.45;overflow-x:hidden;-webkit-text-size-adjust:100%}
+a{color:var(--ink)}
+.banner{position:sticky;top:0;z-index:30;background:rgba(18,18,18,.96);backdrop-filter:blur(8px);color:var(--muted);box-shadow:0 1px 0 var(--line);font-size:13px;padding:8px 16px;text-align:center;font-weight:700;word-break:keep-all}
+.banner small{display:block;font-weight:400}
+main{max-width:600px;margin:0 auto;padding:12px 16px calc(100px + env(safe-area-inset-bottom))}
+.top{display:flex;align-items:center;gap:8px;margin:8px 0 14px;flex-wrap:wrap}
+.top h1{font-size:24px;font-weight:700;margin:0;flex:1;min-width:0;word-break:break-word;letter-spacing:-.01em}
+.top .sub{width:100%;color:var(--muted);font-size:14px;margin-top:-4px}
+.back{color:var(--muted);text-decoration:none;font-weight:700;padding:8px 4px;min-height:44px;display:inline-flex;align-items:center}
+.back:hover{color:var(--ink)}
+.brand{font-size:13px;font-weight:700;color:var(--ink);letter-spacing:.12em}
+.brand i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:7px;vertical-align:middle}
+.card{background:var(--card);border-radius:8px;padding:16px;margin:0 0 12px;box-shadow:var(--shadow)}
+.card h3{margin:0 0 8px;font-size:18px;font-weight:600;line-height:1.3}
+h2.sec{font-size:18px;font-weight:700;color:var(--ink);margin:24px 2px 10px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+h2.sec .cnt{background:var(--surface);color:var(--muted);border-radius:var(--pill);padding:1px 9px;font-size:12px}
+h2.sec.red{color:var(--red)}
+.btn{appearance:none;border:0;background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1px var(--outline);font:inherit;font-size:15px;font-weight:700;letter-spacing:.04em;border-radius:var(--pill);min-height:48px;padding:10px 20px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;text-align:center;word-break:keep-all;transition:transform .1s,background .15s}
+.btn:hover{background:var(--raised);box-shadow:inset 0 0 0 1px var(--ink)}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--green);color:#000;box-shadow:none}
+.btn.primary:hover{background:#3be477}
+.btn.gold{background:#eeeeee;color:#181818;box-shadow:none}
+.btn.gold:hover{background:#fff}
+.btn.danger{background:transparent;color:var(--red);box-shadow:inset 0 0 0 1px var(--red)}
+.btn.danger:hover{background:var(--red-l)}
+.btn.ghost{background:transparent}
+.btn.sm{min-height:42px;padding:6px 16px;font-size:14px}
+.btn.full{width:100%}
+.btn:disabled{opacity:.5;cursor:wait}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.grid3 .btn{flex-direction:column;gap:2px;font-size:14px;padding:10px 6px;border-radius:16px}
+.badge{display:inline-block;font-size:12px;font-weight:700;line-height:1.5;padding:2px 10px;border-radius:var(--pill);white-space:nowrap;vertical-align:middle}
+.badge.green{background:var(--green-l);color:var(--green)}
+.badge.red{background:var(--red-l);color:var(--red)}
+.badge.amber{background:var(--amber-l);color:var(--amber)}
+.badge.blue{background:var(--blue-l);color:var(--blue)}
+.badge.gray{background:var(--surface);color:var(--muted)}
+.badge.stage{background:var(--surface);color:var(--ink)}
+.badge.sample{background:var(--surface);color:var(--muted);box-shadow:inset 0 0 0 1px var(--outline)}
+.item{display:block;background:var(--card);border-radius:8px;padding:14px 16px;margin-bottom:8px;color:inherit;text-decoration:none;box-shadow:var(--shadow);transition:background .15s}
+a.item:hover,a.item:active{background:var(--raised)}
+.item.late{box-shadow:inset 4px 0 0 var(--red),var(--shadow)}
+.item.done .item-title,.item.cancelled .item-title{text-decoration:line-through;color:var(--muted)}
+.item-title{font-weight:700;word-break:break-word}
+.meta{font-size:14px;color:var(--muted);margin-top:4px;word-break:break-word}
+.meta a{color:var(--soft);font-weight:700}
+.excerpt{font-size:14px;margin-top:6px;word-break:break-word;color:var(--soft)}
+.why{font-size:12px;color:var(--soft);font-weight:700;margin-top:4px}
+.late-t{color:var(--red);font-weight:700}
+.row{display:flex;align-items:center}
+.between{justify-content:space-between;align-items:flex-start;gap:10px}
+.gap{gap:8px}.wrap{flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+.mt8{margin-top:8px}.mt16{margin-top:16px}
+.muted{color:var(--muted)}.small{font-size:13px}
+details.fold{background:var(--card);border-radius:8px;padding:0 16px;margin:0 0 12px;box-shadow:var(--shadow)}
+details.fold>summary{cursor:pointer;font-weight:700;padding:14px 0;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:54px}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary::after{content:"펼치기 ▾";font-size:12px;color:var(--muted);font-weight:700;white-space:nowrap;background:var(--surface);padding:3px 10px;border-radius:var(--pill)}
+details.fold[open]>summary::after{content:"접기 ▴"}
+details.fold[open]{padding-bottom:14px}
+.fld{margin:0 0 14px}
+.fld label{display:block;font-weight:700;margin-bottom:6px;font-size:14px}
+input,select,textarea{width:100%;max-width:100%;font:inherit;font-size:16px;padding:12px 14px;border:0;border-radius:8px;background:var(--surface);color:var(--ink);box-shadow:var(--inset);min-height:48px}
+input::placeholder,textarea::placeholder{color:#7c7c7c}
+input[type=checkbox],input[type=radio]{width:auto;min-height:0;box-shadow:none;accent-color:var(--green)}
+textarea{resize:vertical;min-height:80px;line-height:1.45}
+input:focus,select:focus,textarea:focus{outline:none;box-shadow:inset 0 0 0 2px var(--ink)}
+input[type=search],.search input{border-radius:var(--pill);padding-left:20px}
+.req{color:var(--red);font-size:12px;margin-left:4px}
+.opt{color:var(--muted);font-weight:400;font-size:12px;margin-left:4px}
+.hint{font-size:13px;color:var(--muted);margin:0 0 8px}
+.phase{box-shadow:inset 4px 0 0 var(--green),var(--shadow)}
+.phase.prep{box-shadow:inset 4px 0 0 var(--blue),var(--shadow)}
+.phase-label{display:inline-block;font-size:12px;font-weight:700;padding:2px 10px;border-radius:var(--pill);margin-bottom:8px}
+.phase-label.prep{background:var(--blue-l);color:var(--blue)}
+.phase-label.after{background:var(--green-l);color:var(--green)}
+.prow{border:1px dashed #4d4d4d;border-radius:8px;padding:10px;margin-bottom:8px;background:var(--bg)}
+.prow .fld{margin-bottom:8px}
+.kv{margin:0}
+.kv dt{font-size:12px;color:var(--muted);font-weight:700;margin-top:12px;letter-spacing:.04em}
+.kv dt:first-child{margin-top:0}
+.kv dd{margin:3px 0 0;word-break:break-word}
+.none{color:#7c7c7c;font-style:normal}
+.src{display:inline-block;font-size:12px;color:var(--muted);font-weight:700;margin-left:4px;text-decoration:underline;white-space:nowrap}
+.src:hover{color:var(--ink)}
+.bline{padding:10px 0;border-bottom:1px solid var(--line);word-break:break-word}
+.bline:last-child{border-bottom:0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.stat{background:var(--surface);border-radius:8px;padding:10px 6px;text-align:center;font-size:12px;color:var(--muted)}
+.stat b{display:block;font-size:16px;color:var(--ink)}
+.note{padding:12px 14px;border-radius:8px;font-size:14px;margin-bottom:12px;word-break:keep-all}
+.note.gold{background:var(--gold-l);color:var(--soft);box-shadow:inset 4px 0 0 var(--gold)}
+.note.red{background:var(--red-l);color:var(--red);box-shadow:inset 4px 0 0 var(--red)}
+.note.green{background:var(--green-l);color:var(--soft);box-shadow:inset 4px 0 0 var(--green)}
+.note.gray{background:var(--surface);color:var(--muted)}
+.note button{margin-top:8px}
+.tabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:14px;padding-bottom:2px}
+.tabs a{flex:0 0 auto;padding:8px 16px;border-radius:var(--pill);background:var(--surface);text-decoration:none;color:var(--ink);font-weight:400;font-size:14px;min-height:40px;display:inline-flex;align-items:center}
+.tabs a.on{background:var(--ink);color:#000;font-weight:700}
+.empty{color:var(--muted);font-size:14px;padding:12px 14px;background:var(--card);border-radius:8px;margin-bottom:8px}
+.chip{display:inline-block;background:var(--surface);color:var(--soft);font-size:12px;padding:2px 10px;border-radius:var(--pill);margin:2px 4px 2px 0}
+.search{margin-bottom:12px}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#000;z-index:40;padding-bottom:env(safe-area-inset-bottom);box-shadow:var(--shadow-heavy)}
+.nav-in{max-width:600px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+.nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:62px;color:var(--muted);text-decoration:none;font-size:12px;font-weight:400}
+.nav a.on{color:var(--ink);font-weight:700}
+.nav a.on svg{stroke:var(--green)}
+.nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.toast{position:fixed;left:16px;right:16px;bottom:calc(80px + env(safe-area-inset-bottom));margin:0 auto;max-width:520px;padding:14px 20px;border-radius:var(--pill);font-weight:700;font-size:14px;text-align:center;opacity:0;transform:translateY(12px);transition:.2s;pointer-events:none;z-index:80;box-shadow:var(--shadow-heavy)}
+.toast.show{opacity:1;transform:none}
+.toast.ok{background:#eeeeee;color:#000}
+.toast.err{background:var(--red);color:#000}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:60;display:flex;align-items:flex-end;justify-content:center}
+.modal[hidden]{display:none}
+.sheet{background:var(--card);width:100%;max-width:600px;max-height:90vh;overflow:auto;border-radius:16px 16px 0 0;padding:18px 16px calc(20px + env(safe-area-inset-bottom));box-shadow:var(--shadow-heavy)}
+.sheet h2{margin:0 0 12px;font-size:20px;font-weight:700}
+.sheet .x{float:right}
+.pick{max-height:45vh;overflow:auto;margin-bottom:12px}
+.pick-item{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 14px;background:var(--surface);border-radius:8px;margin-bottom:6px;text-decoration:none;color:inherit;font-weight:700;min-height:52px}
+.pick-item:hover{background:var(--raised)}
+.draft-state{min-height:20px}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.photos figure{margin:0;background:var(--surface);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
+.photos img{width:100%;aspect-ratio:1;object-fit:cover;display:block;border-radius:8px}
+.photos figure img{border-radius:0}
+.photos figcaption{font-size:12px;color:var(--muted);padding:4px 6px;min-height:20px}
+.photos figure .btn{margin:0 6px 6px;min-height:34px}
+.photo-box{margin-bottom:8px}
+@media (min-width:600px){.top h1{font-size:26px}}
+</style>
+</head>
+<body>
+<div class="banner" id="banner">이 기기의 브라우저에만 저장됩니다<small id="banner-sub">정기적으로 ‘더보기 → 백업 내보내기’를 해 주세요</small></div>
+<main id="view" aria-live="polite"></main>
+<nav class="nav" aria-label="주요 메뉴"><div class="nav-in">
+  <a href="#/today" data-tab="today"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>오늘</a>
+  <a href="#/people" data-tab="people"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>사람</a>
+  <a href="#/meetings" data-tab="meetings"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12z"/></svg>만남</a>
+  <a href="#/promises" data-tab="promises"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>약속</a>
+  <a href="#/more" data-tab="more"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg>더보기</a>
+</div></nav>
+<div class="modal" id="modal" hidden><div class="sheet" role="dialog" aria-modal="true" id="modal-body"></div></div>
+<div class="toast" id="toast" role="status" aria-live="assertive"></div>
+<input type="file" id="import-file" accept="application/json,.json" hidden>
+
+<script>
+'use strict';
+/* ===== 상수 ===== */
+const KEY = 'meetcode_demo_v1', DKEY = 'meetcode_draft:';
+const STAGES = ['첫 만남','알아가는 중','친분','신뢰','관심·경험','협업','장기 파트너'];
+const CSTATUS = {active:'연락 가능', hold:'연락 보류', stop:'연락 중단'};
+const PSTATUS = {open:'진행 중', done:'완료', cancelled:'취소'};
+const SCHED = {agreed:'합의됨', planned:'내가 계획함', undecided:'미정'};
+const WD = '일월화수목금토';
+
+/* ===== 저장소 ===== */
+let db, storageOk = true;
+function emptyDb(){ return {version:1, settings:{appName:'AI 고객관리 자동화'}, customers:[], meetings:[], promises:[], plans:[], followups:[], products:[], productEvents:[], messages:[]}; }
+function load(){
+  try { const raw = localStorage.getItem(KEY); db = raw ? JSON.parse(raw) : emptyDb(); }
+  catch(e){ storageOk = false; db = emptyDb(); }
+  const e = emptyDb(); for (const k in e) if (db[k] == null) db[k] = e[k];
+  if (!db.settings.appName || db.settings.appName === 'MEET CODE') db.settings.appName = e.settings.appName;  // 예전 기본 이름은 새 이름으로
+}
+function persist(){
+  if (window.__mcFailNextSave){ window.__mcFailNextSave = false; throw new Error('테스트용 저장 실패'); }
+  localStorage.setItem(KEY, JSON.stringify(db));
+}
+// 변경을 한 번에 적용하고, 저장에 실패하면 메모리 상태도 되돌린다.
+function commit(fn){
+  const snap = JSON.stringify(db);
+  try { fn(db); persist(); return true; }
+  catch(err){
+    db = JSON.parse(snap); console.error(err);
+    toast('저장하지 못했습니다. 입력한 내용은 그대로 남아 있으니 다시 시도해 주세요.', 'err');
+    return false;
+  }
+}
+
+/* ===== 날짜 (한국 시간) ===== */
+const kstFmt = new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Seoul', year:'numeric', month:'2-digit', day:'2-digit'});
+function today(){ return kstFmt.format(new Date()); }
+function addDays(s, n){ const d = new Date(s + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0,10); }
+function fd(s){ if (!s) return ''; const d = new Date(s + 'T00:00:00Z'); return `${d.getUTCFullYear()}.${d.getUTCMonth()+1}.${d.getUTCDate()} (${WD[d.getUTCDay()]})`; }
+function fds(s){ if (!s) return ''; const d = new Date(s + 'T00:00:00Z'); return `${d.getUTCMonth()+1}.${d.getUTCDate()}`; }
+function rel(s){
+  if (!s) return '';
+  const diff = Math.round((Date.parse(s) - Date.parse(today())) / 864e5);
+  if (diff === 0) return '오늘'; if (diff === 1) return '내일'; if (diff === -1) return '어제';
+  return diff > 0 ? `${diff}일 후` : `${-diff}일 지남`;
+}
+
+/* ===== 도우미 ===== */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function nl(s){ return esc(s).replace(/\n/g, '<br>'); }
+function cut(s, n){ s = String(s || ''); return s.length > n ? s.slice(0, n) + '…' : s; }
+function uid(p){ return p + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+const NONE = '<span class="none">기록 없음</span>';
+const cust = id => db.customers.find(c => c.id === id);
+const byDate = (a, b) => ((a.date||'') + (a.time||'')).localeCompare((b.date||'') + (b.time||''));
+function doneMeetings(cid){ return db.meetings.filter(m => m.customerId === cid && m.status === 'done').sort(byDate); }
+function stats(cid){ const ms = doneMeetings(cid); return {count: ms.length, last: ms.length ? ms[ms.length-1].date : null}; }
+function meetingNo(m){ return m.status === 'done' ? doneMeetings(m.customerId).findIndex(x => x.id === m.id) + 1 : null; }
+function trimAll(o){ if (typeof o === 'string') return o.trim(); if (Array.isArray(o)) return o.map(trimAll); if (o && typeof o === 'object'){ const r = {}; for (const k in o) r[k] = trimAll(o[k]); return r; } return o; }
+function srcLink(m, label){ return m ? `<a class="src" href="#/meeting/${m.id}">근거: ${fds(m.date)} ${label || '만남'}</a>` : ''; }
+
+function toast(msg, type = 'ok'){
+  const t = $('#toast'); t.textContent = msg; t.className = 'toast show ' + type;
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.className = 'toast ' + type, type === 'err' ? 6000 : 2600);
+}
+function openModal(html){ $('#modal-body').innerHTML = html; $('#modal').hidden = false; const f = $('#modal-body input:not([type=hidden]),#modal-body select,#modal-body textarea'); }
+function closeModal(){ $('#modal').hidden = true; $('#modal-body').innerHTML = ''; }
+
+/* ===== 배지 ===== */
+function badgeStage(n){ return `<span class="badge stage">${n}단계 · ${STAGES[n-1] || ''}</span>`; }
+function badgeCS(s){ return (!s || s === 'active') ? '' : `<span class="badge ${s === 'stop' ? 'red' : 'amber'}">${CSTATUS[s]}</span>`; }
+function badgeP(st){ const cls = {open:'blue', done:'green', cancelled:'gray'}[st]; return `<span class="badge ${cls}">${st === 'done' ? '✓ ' : ''}${PSTATUS[st]}</span>`; }
+function badgeSched(s){ const cls = {agreed:'green', planned:'blue', undecided:'gray'}[s] || 'gray'; return `<span class="badge ${cls}">${SCHED[s] || '미정'}</span>`; }
+function badgeSample(x){ return x && x.sample ? ' <span class="badge sample">샘플</span>' : ''; }
+function dueTxt(p){
+  if (!p.dueDate) return '기한 없음';
+  const late = p.status === 'open' && p.dueDate < today();
+  return `<span class="${late ? 'late-t' : ''}">기한 ${fd(p.dueDate)} · ${rel(p.dueDate)}</span>`;
+}
+
+/* ===== 폼 직렬화 & 임시저장 ===== */
+function formObj(f){
+  const o = {};
+  for (const el of f.elements){
+    if (!el.name) continue;
+    const path = el.name.split('.'); let cur = o;
+    for (let i = 0; i < path.length - 1; i++){
+      if (cur[path[i]] == null) cur[path[i]] = /^\d+$/.test(path[i+1]) ? [] : {};
+      cur = cur[path[i]];
+    }
+    cur[path[path.length-1]] = el.type === 'checkbox' ? el.checked : el.value;
+  }
+  return o;
+}
+let draftTimer = null, skipDraftNotice = false;
+function writeDraft(key, data){
+  try { localStorage.setItem(DKEY + key, JSON.stringify({at: Date.now(), data})); return true; } catch(e){ return false; }
+}
+function saveDraft(f){
+  if (!f || !f.dataset.draft || f.dataset.saved) return;
+  const ok = writeDraft(f.dataset.draft, formObj(f));
+  const s = $('.draft-state', f);
+  if (s) s.textContent = ok ? `임시저장됨 · ${new Date().toLocaleTimeString('ko-KR', {timeZone:'Asia/Seoul', hour:'2-digit', minute:'2-digit', second:'2-digit'})}` : '임시저장을 할 수 없는 환경입니다.';
+}
+function getDraft(k){ try { return JSON.parse(localStorage.getItem(DKEY + k)); } catch(e){ return null; } }
+function clearDraft(k){ try { localStorage.removeItem(DKEY + k); } catch(e){} }
+function draftNotice(dr, key){
+  if (!dr || skipDraftNotice) return '';
+  const t = new Date(dr.at).toLocaleString('ko-KR', {timeZone:'Asia/Seoul', month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'});
+  return `<div class="note gold">저장하지 않은 임시저장 내용(${t})을 불러왔습니다.<br><button class="btn sm ghost" data-act="discard-draft" data-key="${esc(key)}">임시저장 지우고 처음부터</button></div>`;
+}
+function lock(f){ f.dataset.busy = '1'; $$('button[type=submit]', f).forEach(b => { b.disabled = true; b.dataset.label = b.textContent; b.textContent = '저장 중…'; }); }
+function unlock(f){ delete f.dataset.busy; $$('button[type=submit]', f).forEach(b => { b.disabled = false; b.textContent = b.dataset.label || '저장'; }); }
+
+function fld(label, name, val, o = {}){
+  const id = 'f_' + name.replace(/\W/g, '_');
+  let ctl;
+  if (o.area) ctl = `<textarea id="${id}" name="${name}" rows="${o.rows || 3}" placeholder="${esc(o.ph || '')}">${esc(val)}</textarea>`;
+  else if (o.options) ctl = `<select id="${id}" name="${name}">${o.options.map(([v, t]) => `<option value="${esc(v)}" ${String(v) === String(val ?? '') ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select>`;
+  else ctl = `<input id="${id}" name="${name}" type="${o.type || 'text'}" value="${esc(val)}" placeholder="${esc(o.ph || '')}" ${o.req ? 'required' : ''} ${o.type === 'text' || !o.type ? 'autocomplete="off"' : ''}>`;
+  return `<div class="fld"><label for="${id}">${label}${o.req ? '<b class="req">필수</b>' : (o.noOpt ? '' : '<span class="opt">선택</span>')}</label>${o.hint ? `<p class="hint">${o.hint}</p>` : ''}${ctl}</div>`;
+}
+const stageOpts = () => STAGES.map((s, i) => [i + 1, `${i + 1}단계 · ${s}`]);
+
+/* ===== 라우터 ===== */
+function parseHash(){ const h = location.hash.slice(1) || '/today'; const [path, qs] = h.split('?'); return {parts: path.split('/').filter(Boolean), q: new URLSearchParams(qs || '')}; }
+function go(h){ if (location.hash === '#' + h) route(); else location.hash = h; }
+function route(keepScroll){
+  closeModal();
+  const {parts, q} = parseHash(); const [a, b, c] = parts; let tab = a, html;
+  switch (a){
+    case 'today': html = vToday(); break;
+    case 'people': html = b === 'new' ? vCustomerForm(null) : vPeople(); break;
+    case 'person': tab = 'people'; html = c === 'edit' ? vCustomerForm(b) : c === 'brief' ? vBrief(b) : vPerson(b); break;
+    case 'meetings': html = vMeetings(q); break;
+    case 'meeting': tab = 'meetings'; html = b === 'new' ? vMeetingForm(null, q) : c === 'edit' ? vMeetingForm(b, q) : vMeeting(b); break;
+    case 'promises': html = vPromises(q); break;
+    case 'more': html = vMore(); break;
+    case 'products': tab = 'more'; html = vProducts(); break;
+    case 'styles': tab = 'more'; html = vStyles(q); break;
+    case 'messages': tab = 'more'; html = vMessages(q); break;
+    default: location.replace('#/today'); return;
+  }
+  const y = window.scrollY;
+  $('#view').innerHTML = html;
+  hydratePhotos(); syncEvForm();
+  window.scrollTo(0, keepScroll ? y : 0);
+  $$('.nav a').forEach(x => x.classList.toggle('on', x.dataset.tab === tab));
+  document.title = db.settings.appName || 'AI 고객관리 자동화';
+  updateBanner();
+  skipDraftNotice = false;
+}
+const rerender = () => route(true);
+// 마지막 백업 날짜를 배너에 보여 준다. 7일 넘게 백업하지 않으면 강조한다.
+function updateBanner(){
+  const b = $('#banner'), sub = $('#banner-sub'), lb = db.settings.lastBackup;
+  const stale = db.customers.length && (!lb || lb < addDays(today(), -7));
+  b.style.background = stale ? 'var(--gold-l)' : ''; b.style.color = stale ? 'var(--gold)' : '';
+  sub.textContent = !db.customers.length ? '정기적으로 ‘더보기 → 백업 내보내기’를 해 주세요'
+    : lb ? `마지막 백업 ${fd(lb)}${stale ? ' · 백업한 지 일주일이 넘었습니다' : ''}` : '아직 백업하지 않았습니다 · 더보기 → 백업 내보내기';
+}
+function notFound(back = '#/today'){ return `<div class="card"><h3>찾을 수 없습니다</h3><p class="muted">삭제되었거나 잘못된 주소입니다.</p><a class="btn" href="${back}">돌아가기</a></div>`; }
+
+/* ===== 카드 렌더러 ===== */
+function pCard(p, {showCust = true} = {}){
+  const c = cust(p.customerId), m = p.meetingId && db.meetings.find(x => x.id === p.meetingId);
+  const late = p.status === 'open' && p.dueDate && p.dueDate < today();
+  return `<div class="item ${p.status} ${late ? 'late' : ''}" id="p-${p.id}">
+    <div class="row between"><div class="grow">
+      <div class="item-title">${esc(p.content)}</div>
+      <div class="meta">${showCust && c ? `<a href="#/person/${c.id}">${esc(c.name)}</a> · ` : ''}${dueTxt(p)}${m ? ` · <a href="#/meeting/${m.id}">${fds(m.date)} 만남</a>` : ''}</div>
+      ${p.status === 'done' ? `<div class="meta">실제 완료일 ${fd(p.doneDate)}</div>` : ''}
+    </div>${badgeP(p.status)}</div>
+    <div class="row gap mt8">${p.status === 'open'
+      ? `<button class="btn primary sm grow" data-act="promise-done" data-id="${p.id}">약속 완료</button>`
+      : `<button class="btn sm ghost grow" data-act="promise-undo" data-id="${p.id}">진행 중으로 되돌리기</button>`}
+      <button class="btn sm ghost" data-act="promise-edit" data-id="${p.id}">수정</button></div>
+  </div>`;
+}
+function fCard(f, {showCust = true, why = ''} = {}){
+  const c = cust(f.customerId), late = f.status === 'open' && f.date && f.date < today();
+  return `<div class="item ${f.status === 'open' ? '' : 'done'} ${late ? 'late' : ''}">
+    <div class="row between"><div class="grow">
+      <div class="item-title">${esc(f.action || '연락하기')}</div>
+      <div class="meta">${showCust && c ? `<a href="#/person/${c.id}">${esc(c.name)}</a> · ` : ''}${f.date ? `<span class="${late ? 'late-t' : ''}">${fd(f.date)} · ${rel(f.date)}</span>` : '날짜 미정'}</div>
+      ${why ? `<div class="why">${why}</div>` : ''}
+    </div>${f.status === 'open' ? badgeSched(f.scheduleStatus) : `<span class="badge ${f.status === 'done' ? 'green' : 'gray'}">${f.status === 'done' ? '✓ 연락 완료' : '취소'}</span>`}</div>
+    ${f.status === 'open' ? `<div class="row gap mt8"><button class="btn sm primary grow" data-act="fu-done" data-id="${f.id}">연락 완료</button><a class="btn sm ghost" href="#/meeting/new?c=${f.customerId}&mode=record">기록 남기기</a><button class="btn sm ghost" data-act="fu-cancel" data-id="${f.id}">취소</button></div>`
+      : `<div class="row gap mt8"><button class="btn sm ghost" data-act="fu-reopen" data-id="${f.id}">다시 열기</button></div>`}
+  </div>`;
+}
+function mStatus(m){
+  if (m.status === 'done') return '<span class="badge green">기록 완료</span>';
+  if (m.status === 'cancelled') return '<span class="badge gray">취소됨</span>';
+  return m.date < today() ? '<span class="badge amber">기록 전</span>' : '<span class="badge blue">예정</span>';
+}
+function mCard(m, {showCust = true} = {}){
+  const c = cust(m.customerId), no = meetingNo(m);
+  return `<a class="item" href="#/meeting/${m.id}"><div class="row between"><div class="grow">
+    <div class="item-title">${showCust && c ? esc(c.name) + ' · ' : ''}${fd(m.date)}${m.time ? ' ' + esc(m.time) : ''}</div>
+    <div class="meta">${no ? no + '회차 · ' : ''}${esc(m.place || '장소 미입력')}${m.purpose ? ' · ' + esc(m.purpose) : ''}</div>
+    ${m.record && m.record.talk ? `<div class="excerpt">${esc(cut(m.record.talk, 90))}</div>` : (m.status !== 'done' && m.prep && m.prep.goal ? `<div class="excerpt">목적: ${esc(cut(m.prep.goal, 80))}</div>` : '')}
+  </div>${mStatus(m)}</div></a>`;
+}
+
+/* ===== 오늘 ===== */
+function vToday(){
+  const t = today(), name = db.settings.appName || 'AI 고객관리 자동화';
+  const live = p => cust(p.customerId);
+  const openP = db.promises.filter(p => p.status === 'open' && live(p));
+  const overdue = openP.filter(p => p.dueDate && p.dueDate < t).sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+  const dueToday = openP.filter(p => p.dueDate === t);
+  const todayM = db.meetings.filter(m => m.status === 'planned' && m.date === t && live(m)).sort(byDate);
+  const unrec = db.meetings.filter(m => m.status === 'planned' && m.date < t && live(m)).sort(byDate);
+  const allFu = db.followups.filter(f => f.status === 'open' && f.date && f.date <= addDays(t, 7) && live(f));
+  const fuAll = allFu.filter(f => cust(f.customerId).contactStatus === 'active').sort((a, b) => a.date.localeCompare(b.date) || (a.scheduleStatus === 'agreed' ? -1 : 1));
+  const excluded = allFu.length - fuAll.length;
+  const fu = fuAll.filter(f => f.kind !== 'product_check'), pchk = fuAll.filter(f => f.kind === 'product_check');
+  const msgs = db.messages.filter(x => x.status === 'scheduled' && x.scheduledDate && x.scheduledDate <= t && live(x) && cust(x.customerId).contactStatus !== 'stop')
+    .sort((a, b) => (a.scheduledDate + (a.scheduledTime || '')).localeCompare(b.scheduledDate + (b.scheduledTime || '')));
+  const sec = (title, n, body, cls = '') => `<h2 class="sec ${cls}">${title}<span class="cnt">${n}</span></h2>${body}`;
+  const empty = msg => `<div class="empty">${msg}</div>`;
+  const fuWhy = f => (f.date < t ? `연락 예정일 ${rel(f.date)}` : f.date === t ? '오늘 연락 예정' : `${rel(f.date)} 연락 예정`) + ' · ' + (f.scheduleStatus === 'agreed' ? '고객과 합의한 일정' : f.scheduleStatus === 'planned' ? '내가 계획한 일정' : '일정 미정');
+  return `
+  <header class="top"><div class="grow"><div class="brand"><i></i>${esc(name)}</div><h1>오늘 · ${fd(t)}</h1></div></header>
+  ${!storageOk ? '<div class="note red">이 브라우저에서 저장소를 사용할 수 없어 새로고침하면 내용이 사라집니다.</div>' : ''}
+  ${db.customers.length === 0 ? `<div class="card"><h3>처음 오셨나요?</h3><p class="muted" style="margin-bottom:0">아래 ‘사람 추가’로 첫 고객을 등록하고 만남 준비부터 시작해 보세요.</p></div>` : ''}
+  <div class="grid3">
+    <a class="btn primary" href="#/people/new"><b>＋</b>사람 추가</a>
+    <button class="btn gold" data-act="pick" data-mode="prep"><b>☰</b>만남 준비</button>
+    <button class="btn" data-act="pick" data-mode="record"><b>✎</b>빠른 기록</button>
+  </div>
+  ${sec('기한이 지난 내 약속', overdue.length, overdue.map(p => pCard(p)).join('') || empty('기한이 지난 약속이 없습니다.'), overdue.length ? 'red' : '')}
+  ${sec('오늘 완료할 내 약속', dueToday.length, dueToday.map(p => pCard(p)).join('') || empty('오늘 기한인 약속이 없습니다.'))}
+  ${msgs.length ? sec('오늘 보낼 메시지 (예약)', msgs.length, msgs.map(x => msgCard(x)).join('')) : ''}
+  ${sec('오늘의 만남', todayM.length, todayM.map(m => {
+      const c = cust(m.customerId), p = m.prep || {}; const ready = p.goal || p.q1 || p.materials;
+      return `<div class="item"><div class="row between"><div class="grow"><div class="item-title"><a href="#/person/${c.id}">${esc(c.name)}</a>${m.time ? ' · ' + esc(m.time) : ''}</div>
+        <div class="meta">${esc(m.place || '장소 미입력')}${p.goal ? ' · 목적: ' + esc(cut(p.goal, 40)) : ''}</div>
+        ${p.materials ? `<div class="meta">준비물: ${esc(cut(p.materials, 60))}</div>` : ''}</div>
+        ${ready ? '<span class="badge green">준비 작성됨</span>' : '<span class="badge amber">준비 전</span>'}</div>
+        <div class="grid2 mt8"><a class="btn sm gold" href="#/person/${c.id}/brief">다음 만남 보기</a><a class="btn sm primary" href="#/meeting/${m.id}/edit?mode=record">만남 후 기록</a></div></div>`;
+    }).join('') || empty('오늘 예정된 만남이 없습니다.'))}
+  ${sec('다음 연락 일정 (7일 이내)', fu.length, (fu.map(f => fCard(f, {why: fuWhy(f)})).join('') || empty('7일 안에 예정된 연락이 없습니다.')) + (excluded ? `<p class="muted small">연락 보류·중단 상태인 사람의 연락 일정 ${excluded}건은 제외했습니다.</p>` : ''))}
+  ${sec('제품 사용 경험 확인 (7일 이내)', pchk.length, pchk.map(f => fCard(f, {why: fuWhy(f)})).join('') || empty('예정된 확인이 없습니다.'))}
+  ${sec('아직 기록하지 않은 만남', unrec.length, unrec.map(m => mCard(m)).join('') || empty('정리할 만남이 없습니다.'))}
+  <p class="muted small mt16">정렬 기준: 약속 기한 → 오늘 일정 → 고객과 합의한 연락일 → 내가 계획한 연락일. 고객을 점수로 평가하지 않습니다.</p>`;
+}
+
+/* ===== 사람 목록 ===== */
+function vPeople(){
+  const list = [...db.customers].map(c => ({c, s: stats(c.id)})).sort((a, b) => (b.s.last || b.c.createdAt || '').localeCompare(a.s.last || a.c.createdAt || ''));
+  return `<header class="top"><h1>사람</h1><a class="btn primary sm" href="#/people/new">＋ 사람 추가</a></header>
+  <input class="search" type="search" placeholder="이름 또는 별칭으로 검색" data-filter="#people-list" aria-label="이름 검색">
+  <div id="people-list">${list.map(({c, s}) => `<a class="item" href="#/person/${c.id}" data-name="${esc(c.name.toLowerCase())}">
+    <div class="row between"><div class="grow"><div class="item-title">${esc(c.name)}${badgeSample(c)}</div>
+    <div class="meta">${s.last ? `최근 만남 ${fd(s.last)} · ${s.count}회` : '아직 완료된 만남 없음'}${c.source ? ' · ' + esc(c.source) : ''}</div>
+    ${(c.tags || []).length ? `<div class="mt8">${c.tags.map(t => `<span class="chip">${esc(t)}</span>`).join('')}</div>` : ''}</div>
+    <div style="text-align:right">${badgeStage(c.stage)}<div class="mt8">${badgeCS(c.contactStatus)}</div></div></div></a>`).join('') || '<div class="empty">등록된 사람이 없습니다. ‘사람 추가’로 시작하세요.</div>'}
+  <div class="empty" data-empty hidden>검색 결과가 없습니다.</div></div>`;
+}
+
+/* ===== 고객 등록·수정 ===== */
+function vCustomerForm(id){
+  const c = id ? cust(id) : null; if (id && !c) return notFound('#/people');
+  const key = 'customer:' + (id || 'new'), dr = getDraft(key);
+  const s = dr ? dr.data : c ? {...c, tags: (c.tags || []).join(', ')} : {id: uid('c'), stage: '1', contactStatus: 'active'};
+  return `<header class="top"><a class="back" href="${c ? '#/person/' + c.id : '#/people'}">‹ 뒤로</a><h1>${c ? '사람 정보 수정' : '사람 추가'}</h1></header>
+  ${draftNotice(dr, key)}
+  <form class="card" data-form="customer" data-draft="${key}" novalidate>
+    <input type="hidden" name="id" value="${esc(s.id)}">
+    ${fld('이름 또는 별칭', 'name', s.name, {req: true, ph: '예: 가상고객 김하늘', hint: '이름이나 별칭만 입력해도 저장됩니다.'})}
+    ${fld('처음 알게 된 계기', 'source', s.source, {ph: '예: 토요 슬로우러닝 모임'})}
+    ${fld('관심 활동 태그', 'tags', s.tags, {ph: '쉼표로 구분 · 예: 슬로우러닝, 독서모임', hint: '커뮤니티 참여 태그입니다. 제품·사업 관심과는 따로 기록하세요.'})}
+    ${c ? `<div class="fld"><label>현재 관계 단계</label>${badgeStage(c.stage)} <span class="muted small">고객 상세의 ‘단계 변경’에서 날짜·근거와 함께 바꿉니다.</span></div>` : fld('현재 관계 단계', 'stage', s.stage, {options: stageOpts(), hint: '운영자의 관계 정리용 분류입니다. 점수나 구매 가능성이 아닙니다.'})}
+    <details class="fold" ${c ? 'open' : ''}><summary>더 입력하기</summary>
+      ${fld('기억해야 할 관심사', 'interests', s.interests, {area: true, ph: '본인이 직접 말한 관심사 위주로'})}
+      ${fld('연락처', 'contact', s.contact, {ph: '예: 010-0000-0000', hint: '본인이 알려 준 연락처만 적으세요.'})}
+      ${fld('직업·활동 분야', 'job', s.job)}
+      ${fld('선호 연락 수단과 시간', 'contactPref', s.contactPref, {ph: '예: 카카오톡, 평일 저녁'})}
+      ${fld('연락 상태', 'contactStatus', s.contactStatus, {options: Object.entries(CSTATUS), hint: '보류·중단 상태면 오늘 화면의 연락 일정에서 제외됩니다.'})}
+      ${fld('연락 상태 사유', 'statusReason', s.statusReason, {ph: '예: 본인이 한 달 뒤 연락해 달라고 함'})}
+      ${fld('메모', 'memo', s.memo, {area: true, hint: '건강 상세정보, 가족·경제 정보는 적지 않습니다.'})}
+    </details>
+    <button class="btn primary full" type="submit">저장</button>
+    <p class="draft-state muted small"></p>
+  </form>`;
+}
+
+/* ===== 고객 상세 ===== */
+function vPerson(id){
+  const c = cust(id); if (!c) return notFound('#/people');
+  const s = stats(id), t = today();
+  const ps = db.promises.filter(p => p.customerId === id);
+  const openP = ps.filter(p => p.status === 'open').sort((a, b) => (a.dueDate || '9').localeCompare(b.dueDate || '9'));
+  const restP = ps.filter(p => p.status !== 'open').sort((a, b) => (b.doneDate || b.dueDate || '').localeCompare(a.doneDate || a.dueDate || ''));
+  const plans = db.plans.filter(p => p.customerId === id).sort(byDate).reverse();
+  const fus = db.followups.filter(f => f.customerId === id).sort((a, b) => (a.status === 'open' ? 0 : 1) - (b.status === 'open' ? 0 : 1) || (a.date || '').localeCompare(b.date || ''));
+  const ms = db.meetings.filter(m => m.customerId === id).sort(byDate).reverse();
+  const hist = (c.stageHistory || []).slice().reverse();
+  return `<header class="top"><a class="back" href="#/people">‹ 사람</a><h1>${esc(c.name)}${badgeSample(c)}</h1><a class="btn sm ghost" href="#/person/${id}/edit">수정</a></header>
+  <div class="card">
+    <div class="row gap wrap">${badgeStage(c.stage)} ${badgeCS(c.contactStatus)}</div>
+    ${c.source ? `<div class="meta">처음 알게 된 계기: ${esc(c.source)}</div>` : ''}
+    ${(c.tags || []).length ? `<div class="mt8">${c.tags.map(x => `<span class="chip">${esc(x)}</span>`).join('')}</div>` : ''}
+    <div class="stats"><div class="stat">최근 만남<b>${s.last ? fds(s.last) : '-'}</b></div><div class="stat">완료된 만남<b>${s.count}회</b></div><div class="stat">진행 중 약속<b>${openP.length}건</b></div></div>
+    ${c.contactStatus !== 'active' ? `<div class="note ${c.contactStatus === 'stop' ? 'red' : 'gold'}">${CSTATUS[c.contactStatus]} 상태입니다${c.statusReason ? ` (${esc(c.statusReason)})` : ''}. 오늘 화면의 연락 일정에서 제외됩니다.</div>` : ''}
+    <a class="btn gold full" href="#/person/${id}/brief">만나기 전 보기 · 다음 만남 브리핑</a>
+    <div class="grid2 mt8"><a class="btn" href="#/meeting/new?c=${id}&mode=prep">만남 준비</a><a class="btn primary" href="#/meeting/new?c=${id}&mode=record">빠른 기록</a></div>
+  </div>
+
+  <h2 class="sec">내 약속<span class="cnt">${openP.length}</span></h2>
+  ${openP.map(p => pCard(p, {showCust: false})).join('') || '<div class="empty">진행 중인 약속이 없습니다.</div>'}
+  <button class="btn sm ghost" data-act="promise-new" data-c="${id}">＋ 약속 직접 추가</button>
+  ${restP.length ? `<details class="fold mt8"><summary>완료·취소된 약속 ${restP.length}건</summary>${restP.map(p => pCard(p, {showCust: false})).join('')}</details>` : ''}
+
+  <h2 class="sec">상대가 말한 계획<span class="cnt">${plans.length}</span></h2>
+  <div class="card">${plans.map(p => { const m = db.meetings.find(x => x.id === p.meetingId); return `<div class="bline">${esc(p.content)} ${srcLink(m)}</div>`; }).join('') || '<span class="none">기록 없음</span>'}
+  <p class="muted small mt8">상대가 말한 계획은 내 약속과 따로 보관합니다.</p></div>
+
+  <h2 class="sec">다음 연락 일정<span class="cnt">${fus.filter(f => f.status === 'open').length}</span></h2>
+  ${fus.map(f => fCard(f, {showCust: false})).join('') || '<div class="empty">등록된 연락 일정이 없습니다.</div>'}
+
+  <h2 class="sec">만남 이력 (최신순)<span class="cnt">${ms.length}</span></h2>
+  ${ms.map(m => {
+    const r = m.record || {}, no = meetingNo(m), mp = db.promises.filter(p => p.meetingId === m.id), f = db.followups.find(x => x.meetingId === m.id);
+    return `<a class="item" href="#/meeting/${m.id}"><div class="row between"><div class="grow">
+      <div class="item-title">${fd(m.date)}${no ? ` · ${no}회차` : ''}</div><div class="meta">${esc(m.place || '장소 미입력')}</div></div>${mStatus(m)}</div>
+      ${m.status === 'done' ? `<dl class="kv mt8">
+        <dt>핵심 대화</dt><dd>${r.talk ? esc(cut(r.talk, 120)) : NONE}</dd>
+        ${r.learned ? `<dt>새롭게 알게 된 것</dt><dd>${esc(cut(r.learned, 100))}</dd>` : ''}
+        ${r.detail && r.detail.valueGiven ? `<dt>제공한 가치</dt><dd>${esc(cut(r.detail.valueGiven, 80))}</dd>` : ''}
+        ${mp.length ? `<dt>약속</dt><dd>${mp.map(p => `${esc(p.content)} ${badgeP(p.status)}`).join('<br>')}</dd>` : ''}
+        ${f ? `<dt>다음 행동</dt><dd>${esc(f.action || '')} ${f.date ? '· ' + fd(f.date) : ''}</dd>` : ''}
+      </dl>` : (m.prep && m.prep.goal ? `<div class="excerpt">준비한 목적: ${esc(cut(m.prep.goal, 80))}</div>` : '')}</a>`;
+  }).join('') || '<div class="empty">아직 만남 기록이 없습니다.</div>'}
+
+  ${productSection(c)}
+  ${messageSection(c)}
+  <details class="fold"><summary>사진</summary>${photoBox({customerId: id, kind: 'person'}, '고객 사진은 본인이 동의한 경우에만 올리세요. 만남 사진은 각 만남 화면에서 올립니다.')}</details>
+
+  <details class="fold mt16"><summary>관계 단계와 변경 이력</summary>
+    <p>현재 ${badgeStage(c.stage)}</p>
+    <p class="muted small">운영자가 관계를 정리하기 위한 분류입니다. 자동으로 오르지 않으며, 이전 단계로도 바꿀 수 있습니다.</p>
+    ${hist.map(h => `<div class="bline"><b>${fd(h.date)}</b> ${h.from ? `${h.from}단계 → ` : ''}${h.to}단계 ${esc(STAGES[h.to-1])}<div class="meta">근거: ${esc(h.reason || '기록 없음')}</div></div>`).join('')}
+    <button class="btn full mt8" data-act="stage" data-id="${id}">단계 변경</button>
+  </details>
+  <details class="fold"><summary>기본 정보</summary><dl class="kv">
+    <dt>기억해야 할 관심사</dt><dd>${c.interests ? nl(c.interests) : NONE}</dd>
+    <dt>연락처</dt><dd>${c.contact ? esc(c.contact) : NONE}</dd>
+    <dt>직업·활동 분야</dt><dd>${c.job ? esc(c.job) : NONE}</dd>
+    <dt>선호 연락 수단·시간</dt><dd>${c.contactPref ? esc(c.contactPref) : NONE}</dd>
+    <dt>연락 상태 이력</dt><dd>${(c.contactLog || []).length ? c.contactLog.map(l => `${fd(l.date)} ${CSTATUS[l.status]}${l.reason ? ' · ' + esc(l.reason) : ''}`).join('<br>') : NONE}</dd>
+    <dt>메모</dt><dd>${c.memo ? nl(c.memo) : NONE}</dd>
+    <dt>등록일</dt><dd>${c.createdAt ? fd(c.createdAt.slice(0, 10)) : '-'}</dd>
+  </dl></details>
+  <button class="btn danger full mt16" data-act="del-customer" data-id="${id}">이 사람 삭제</button>`;
+}
+
+/* ===== 다음 만남 브리핑 ===== */
+function vBrief(id){
+  const c = cust(id); if (!c) return notFound('#/people');
+  const t = today(), ms = doneMeetings(id), last = ms[ms.length-1];
+  const planned = db.meetings.filter(m => m.customerId === id && m.status === 'planned').sort(byDate);
+  const up = planned.find(m => m.date >= t) || planned[planned.length-1];
+  const p = (up && up.prep) || {};
+  const recent = ms.slice(-2).reverse().filter(m => m.record && m.record.talk);
+  const interests = [];
+  if (c.interests) interests.push(`${nl(c.interests)} <span class="src">근거: 고객 카드</span>`);
+  ms.slice().reverse().forEach(m => {
+    const d = (m.record && m.record.detail) || {};
+    if (d.saidInterests) interests.push(`${esc(d.saidInterests)} <span class="muted small">(직접 말함)</span> ${srcLink(m)}`);
+    if (m.record && m.record.learned) interests.push(`${esc(m.record.learned)} <span class="muted small">(새로 알게 됨)</span> ${srcLink(m)}`);
+  });
+  const ps = db.promises.filter(x => x.customerId === id && x.status !== 'cancelled').sort((a, b) => (a.status === 'open' ? 0 : 1) - (b.status === 'open' ? 0 : 1) || (a.dueDate || '').localeCompare(b.dueDate || ''));
+  const plans = db.plans.filter(x => x.customerId === id).sort(byDate).reverse();
+  const fus = db.followups.filter(f => f.customerId === id && f.status === 'open').sort((a, b) => (a.date || '9').localeCompare(b.date || '9'));
+  const qs = [p.q1, p.q2, p.q3].filter(Boolean);
+  const box = (title, body) => `<div class="card"><h3>${title}</h3>${body}</div>`;
+  const upSrc = up ? `<a class="src" href="#/meeting/${up.id}">근거: ${fds(up.date)} 만남 준비</a>` : '';
+  return `<header class="top"><a class="back" href="#/person/${id}">‹ ${esc(c.name)}</a><h1>만나기 전 보기</h1><div class="sub">${esc(c.name)} · ${STAGES[c.stage-1]}</div></header>
+  <div class="note gray">저장된 기록을 모아 정리한 화면입니다. AI 분석 결과가 아니며, 기록이 없는 항목은 ‘기록 없음’으로 표시합니다. 각 항목의 <b style="color:var(--gold)">근거</b>를 누르면 원래 기록으로 이동합니다.</div>
+  ${c.contactStatus !== 'active' ? `<div class="note red">${CSTATUS[c.contactStatus]} 상태입니다. 연락 전에 상태를 확인하세요.</div>` : ''}
+  ${up ? `<div class="note green">예정된 만남: <b>${fd(up.date)}${up.time ? ' ' + esc(up.time) : ''}</b> ${up.place ? '· ' + esc(up.place) : ''}${p.goal ? `<br>이번 만남의 목적: ${esc(p.goal)}` : ''}</div>` : ''}
+  ${box('마지막 만남', last ? `<b>${fd(last.date)}</b> (${rel(last.date)}) · ${meetingNo(last)}회차 · ${esc(last.place || '장소 미입력')} ${srcLink(last, '기록')}` : NONE)}
+  ${box('최근 핵심 대화', recent.map(m => `<div class="bline">${nl(m.record.talk)} ${srcLink(m)}</div>`).join('') || NONE)}
+  ${box('기억해야 할 관심사', interests.map(x => `<div class="bline">${x}</div>`).join('') || NONE)}
+  ${box('내가 한 약속과 완료 여부', ps.map(x => { const m = db.meetings.find(y => y.id === x.meetingId); return `<div class="bline"><div class="row between"><span class="grow">${esc(x.content)}</span>${badgeP(x.status)}</div><div class="meta">${x.status === 'done' ? `완료일 ${fd(x.doneDate)}` : dueTxt(x)} ${srcLink(m)}</div></div>`; }).join('') || NONE)}
+  ${box('상대가 말한 계획', plans.map(x => `<div class="bline">${esc(x.content)} ${srcLink(db.meetings.find(y => y.id === x.meetingId))}</div>`).join('') || NONE)}
+  ${box('미리 작성한 다음 질문', qs.length ? `<ol style="margin:0;padding-left:20px">${qs.map(q => `<li class="bline">${esc(q)}</li>`).join('')}</ol>${upSrc}` : `${NONE}<p class="muted small">‘만남 준비’에서 질문을 최대 3개 작성하면 여기에 표시됩니다.</p>`)}
+  ${box('확인할 내용', p.checkItems ? `${nl(p.checkItems)} ${upSrc}` : NONE)}
+  ${box('이번에 준비할 자료·먼저 줄 가치', `<dl class="kv"><dt>준비물·전달할 자료</dt><dd>${p.materials ? nl(p.materials) + ' ' + upSrc : NONE}</dd><dt>먼저 줄 가치</dt><dd>${p.valueFirst ? nl(p.valueFirst) + ' ' + upSrc : NONE}</dd><dt>오늘 하지 않을 것</dt><dd>${p.notToDo ? nl(p.notToDo) + ' ' + upSrc : NONE}</dd></dl>`)}
+  ${box('다음 행동과 날짜', fus.map(f => { const m = db.meetings.find(y => y.id === f.meetingId); return `<div class="bline"><div class="row between"><b class="grow">${esc(f.action || '연락하기')}</b>${badgeSched(f.scheduleStatus)}</div><div class="meta">${f.date ? fd(f.date) + ' · ' + rel(f.date) : '날짜 미정'} ${srcLink(m)}</div></div>`; }).join('') || NONE)}
+  <div class="grid2"><a class="btn" href="${up ? `#/meeting/${up.id}/edit?mode=prep` : `#/meeting/new?c=${id}&mode=prep`}">${up ? '준비 내용 수정' : '만남 준비'}</a><a class="btn primary" href="${up ? `#/meeting/${up.id}/edit?mode=record` : `#/meeting/new?c=${id}&mode=record`}">만남 후 기록</a></div>`;
+}
+
+/* ===== 만남 목록 ===== */
+function vMeetings(q){
+  const tab = q.get('tab') || 'upcoming', t = today();
+  let list = db.meetings.filter(m => cust(m.customerId));
+  if (tab === 'upcoming') list = list.filter(m => m.status === 'planned').sort(byDate);
+  else if (tab === 'done') list = list.filter(m => m.status === 'done').sort(byDate).reverse();
+  else list = list.sort(byDate).reverse();
+  const tabA = (k, l) => `<a href="#/meetings?tab=${k}" class="${tab === k ? 'on' : ''}">${l}</a>`;
+  return `<header class="top"><h1>만남</h1></header>
+  <div class="grid2" style="margin-bottom:12px"><button class="btn gold" data-act="pick" data-mode="prep">만남 준비</button><button class="btn primary" data-act="pick" data-mode="record">빠른 기록</button></div>
+  <div class="tabs">${tabA('upcoming', '예정·기록 전')}${tabA('done', '기록 완료')}${tabA('all', '전체')}</div>
+  ${list.map(m => mCard(m)).join('') || '<div class="empty">해당하는 만남이 없습니다.</div>'}`;
+}
+
+/* ===== 만남 상세 (30초 요약) ===== */
+function vMeeting(id){
+  const m = db.meetings.find(x => x.id === id); if (!m) return notFound('#/meetings');
+  const c = cust(m.customerId); if (!c) return notFound('#/meetings');
+  const p = m.prep || {}, r = m.record || {}, d = r.detail || {}, no = meetingNo(m);
+  const mp = db.promises.filter(x => x.meetingId === id), plans = db.plans.filter(x => x.meetingId === id), f = db.followups.find(x => x.meetingId === id);
+  const val = v => v ? nl(v) : NONE;
+  const prepHtml = `<dl class="kv"><dt>오늘 만남의 목적</dt><dd>${val(p.goal)}</dd><dt>확인할 내용</dt><dd>${val(p.checkItems)}</dd>
+    <dt>준비한 질문</dt><dd>${[p.q1, p.q2, p.q3].filter(Boolean).map((q, i) => `${i+1}. ${esc(q)}`).join('<br>') || NONE}</dd>
+    <dt>먼저 줄 가치</dt><dd>${val(p.valueFirst)}</dd><dt>준비물·전달할 자료</dt><dd>${val(p.materials)}</dd><dt>오늘 하지 않을 것</dt><dd>${val(p.notToDo)}</dd></dl>`;
+  return `<header class="top"><a class="back" href="#/person/${c.id}">‹ ${esc(c.name)}</a><h1>${m.status === 'done' ? '만남 기록' : '예정된 만남'}</h1>
+    <div class="sub">${fd(m.date)}${m.time ? ' ' + esc(m.time) : ''}${no ? ` · ${no}회차` : ''} · ${esc(m.place || '장소 미입력')}</div></header>
+  <div class="row gap wrap" style="margin-bottom:12px">${mStatus(m)} ${m.purpose ? `<span class="chip">${esc(m.purpose)}</span>` : ''}${badgeSample(m)}</div>
+  ${m.status === 'done' ? `<div class="card phase"><span class="phase-label after">만남 30초 요약</span><dl class="kv">
+    <dt>오늘의 핵심</dt><dd>${val(r.talk)}</dd>
+    <dt>상대의 핵심 관심 (직접 말함)</dt><dd>${val(d.saidInterests)}</dd>
+    <dt>먼저 줄 가치 · 제공한 가치</dt><dd>${p.valueFirst || d.valueGiven ? [p.valueFirst && '준비: ' + esc(p.valueFirst), d.valueGiven && '제공: ' + esc(d.valueGiven)].filter(Boolean).join('<br>') : NONE}</dd>
+    <dt>내가 한 약속</dt><dd>${mp.map(x => `${esc(x.content)} ${badgeP(x.status)}<div class="meta">${x.status === 'done' ? '완료일 ' + fd(x.doneDate) : dueTxt(x)}</div>`).join('') || NONE}</dd>
+    <dt>다음 행동 · 날짜</dt><dd>${f ? `${esc(f.action || '연락하기')} · ${f.date ? fd(f.date) : '날짜 미정'} ${badgeSched(f.scheduleStatus)}` : NONE}</dd>
+  </dl></div>
+  <details class="fold"><summary>대화 기록 전체</summary><dl class="kv">
+    <dt>새롭게 알게 된 내용</dt><dd>${val(r.learned)}</dd>
+    <dt>상대가 말한 계획</dt><dd>${plans.map(x => esc(x.content)).join('<br>') || NONE}</dd>
+    <dt>반응이 좋았던 질문</dt><dd>${val(d.goodQuestions)}</dd>
+  </dl></details>
+  <details class="fold"><summary>나의 복기</summary><dl class="kv">
+    <dt>내가 제공한 가치</dt><dd>${val(d.valueGiven)}</dd><dt>내가 잘한 점</dt><dd>${val(d.didWell)}</dd><dt>다음에 개선할 점</dt><dd>${val(d.improve)}</dd>
+  </dl></details>
+  <details class="fold"><summary>만남 전 준비 내용</summary>${prepHtml}</details>
+  <div class="grid2"><a class="btn primary" href="#/meeting/${id}/edit?mode=record">기록 수정</a><a class="btn gold" href="#/person/${c.id}/brief">다음 만남 보기</a></div>`
+  : `<div class="card phase prep"><span class="phase-label prep">만남 전 준비</span>${prepHtml}</div>
+  ${m.status === 'planned' ? `<a class="btn primary full" href="#/meeting/${id}/edit?mode=record">만남 후 기록하기</a>
+  <div class="grid2 mt8"><a class="btn" href="#/meeting/${id}/edit?mode=prep">준비 내용 수정</a><a class="btn gold" href="#/person/${c.id}/brief">만나기 전 보기</a></div>
+  <button class="btn ghost full mt8" data-act="cancel-meeting" data-id="${id}">이 만남 취소 (일정만 취소, 기록 보존)</button>`
+  : `<button class="btn full" data-act="restore-meeting" data-id="${id}">다시 예정으로 되돌리기</button>`}`}
+  ${styleView(m.style)}
+  <details class="fold mt8"><summary>사진</summary>
+    ${photoBox({meetingId: id, kind: 'meeting'}, '함께 찍힌 사람의 동의를 받은 사진만 올리세요.')}
+    <p class="hint mt16"><b>나의 옷차림 사진</b> · 스타일 기록에서 비교할 수 있습니다.</p>
+    ${photoBox({meetingId: id, kind: 'outfit'})}
+  </details>
+  <button class="btn danger full mt16" data-act="del-meeting" data-id="${id}">이 만남 삭제</button>`;
+}
+
+/* ===== 만남 준비·기록 폼 ===== */
+function meetingToState(m){
+  const f = db.followups.find(x => x.meetingId === m.id);
+  return {id: m.id, customerId: m.customerId, date: m.date, time: m.time, place: m.place, purpose: m.purpose,
+    prep: {...(m.prep || {})}, record: {...(m.record || {}), detail: {...((m.record || {}).detail || {})}}, style: {...(m.style || {})},
+    promises: db.promises.filter(p => p.meetingId === m.id).map(p => ({id: p.id, content: p.content, dueDate: p.dueDate})),
+    plans: db.plans.filter(p => p.meetingId === m.id).map(p => ({id: p.id, content: p.content})),
+    next: f ? {followupId: f.id, action: f.action, date: f.date, scheduleStatus: f.scheduleStatus} : {followupId: uid('f'), scheduleStatus: 'planned'}};
+}
+function normState(s){
+  s.prep = s.prep || {}; s.record = s.record || {}; s.record.detail = s.record.detail || {}; s.style = s.style || {};
+  s.promises = (s.promises || []).filter(Boolean); s.plans = (s.plans || []).filter(Boolean);
+  s.next = s.next || {}; if (!s.next.followupId) s.next.followupId = uid('f');
+  return s;
+}
+function vMeetingForm(id, q){
+  const m = id ? db.meetings.find(x => x.id === id) : null; if (id && !m) return notFound('#/meetings');
+  const mode = q.get('mode') === 'record' ? 'record' : 'prep';
+  const cid = m ? m.customerId : q.get('c'), c = cust(cid);
+  if (!c) return `<div class="card"><h3>먼저 사람을 선택하세요</h3><button class="btn primary" data-act="pick" data-mode="${mode}">사람 선택</button></div>`;
+  const key = `meeting:${id || 'new:' + cid}:${mode}`, dr = getDraft(key);
+  const s = normState(dr ? dr.data : m ? meetingToState(m) : {id: uid('m'), customerId: cid, date: today(), next: {scheduleStatus: 'planned'}});
+  if (mode === 'record' && !s.promises.length) s.promises.push({id: uid('p'), content: '', dueDate: ''});
+  if (mode === 'record' && !s.plans.length) s.plans.push({id: uid('pl'), content: '', });
+  const p = s.prep, r = s.record, d = r.detail;
+  const last = doneMeetings(cid).filter(x => x.id !== s.id).pop();
+  const openP = db.promises.filter(x => x.customerId === cid && x.status === 'open' && x.meetingId !== s.id);
+  const back = m ? `#/meeting/${m.id}` : `#/person/${cid}`;
+  const prepFields = `
+    ${fld('오늘 만남의 목적', 'prep.goal', p.goal, {ph: '핵심 목적 한 가지'})}
+    ${fld('확인할 내용', 'prep.checkItems', p.checkItems, {area: true, rows: 2, ph: '예: 지난번 요청한 자료가 도움이 됐는지'})}
+    ${fld('준비한 질문 1', 'prep.q1', p.q1)}${fld('준비한 질문 2', 'prep.q2', p.q2)}${fld('준비한 질문 3', 'prep.q3', p.q3)}
+    ${fld('먼저 줄 가치', 'prep.valueFirst', p.valueFirst, {area: true, rows: 2, ph: '상대가 요청했거나 관심을 표현한 것 중심으로'})}
+    ${fld('준비물·전달할 자료', 'prep.materials', p.materials, {area: true, rows: 2})}
+    ${fld('오늘 하지 않을 것', 'prep.notToDo', p.notToDo, {ph: '예: 제품 이야기를 먼저 꺼내지 않기'})}`;
+  const rowP = (x, i) => `<div class="prow"><input type="hidden" name="promises.${i}.id" value="${esc(x.id)}">
+    ${fld('약속 내용', `promises.${i}.content`, x.content, {ph: '예: 러닝 훈련표 자료 보내기', noOpt: true})}
+    <div class="row gap"><div class="grow">${fld('완료 예정일', `promises.${i}.dueDate`, x.dueDate, {type: 'date', noOpt: true})}</div>
+    <button type="button" class="btn sm ghost" data-act="rm-row" data-kind="promises" data-idx="${i}" aria-label="약속 삭제">삭제</button></div></div>`;
+  const rowPl = (x, i) => `<div class="prow"><input type="hidden" name="plans.${i}.id" value="${esc(x.id)}">
+    <div class="row gap" style="align-items:flex-end"><div class="grow">${fld('상대가 말한 계획', `plans.${i}.content`, x.content, {ph: '예: 다음 달 하프마라톤 신청 예정', noOpt: true})}</div>
+    <button type="button" class="btn sm ghost" style="margin-bottom:14px" data-act="rm-row" data-kind="plans" data-idx="${i}" aria-label="계획 삭제">삭제</button></div></div>`;
+  return `<header class="top"><a class="back" href="${back}">‹ 뒤로</a><h1>${mode === 'prep' ? '만남 준비' : '만남 후 기록'}</h1><div class="sub">${esc(c.name)} · ${badgeStage(c.stage)} ${badgeCS(c.contactStatus)}</div></header>
+  ${draftNotice(dr, key)}
+  <details class="fold"><summary>이전 기록 확인</summary>
+    <dl class="kv"><dt>마지막 만남</dt><dd>${last ? `${fd(last.date)} · ${esc(cut((last.record || {}).talk || '', 120)) || '대화 기록 없음'}` : NONE}</dd>
+    <dt>진행 중인 내 약속</dt><dd>${openP.map(x => `${esc(x.content)} <span class="muted small">${x.dueDate ? fds(x.dueDate) + ' 까지' : ''}</span>`).join('<br>') || NONE}</dd>
+    <dt>기억해야 할 관심사</dt><dd>${c.interests ? nl(c.interests) : NONE}</dd></dl>
+    <a class="btn sm ghost mt8" href="#/person/${cid}/brief">브리핑 전체 보기</a>
+  </details>
+  <form data-form="meeting" data-mode="${mode}" data-draft="${esc(key)}" novalidate>
+    <input type="hidden" name="id" value="${esc(s.id)}"><input type="hidden" name="customerId" value="${esc(cid)}"><input type="hidden" name="next.followupId" value="${esc(s.next.followupId)}">
+    <div class="card"><div class="grid2">${fld('만남 날짜', 'date', s.date, {type: 'date', req: true})}${fld('시간', 'time', s.time, {type: 'time'})}</div>
+      ${fld('장소 또는 연락 방식', 'place', s.place, {ph: '예: 한강 러닝 코스, 전화'})}
+      ${fld('만남 목적·계기', 'purpose', s.purpose, {ph: '예: 러닝 후 커피, 독서모임'})}</div>
+    ${mode === 'prep'
+      ? `<div class="card phase prep"><span class="phase-label prep">만남 전 준비</span><p class="hint">모든 항목은 선택입니다. 필요한 것만 적으세요.</p>${prepFields}</div>
+        <details class="fold"><summary>옷차림·스타일 계획 (선택)</summary>${styleFields(s.style, false)}</details>`
+      : `<div class="card phase"><span class="phase-label after">빠른 기록</span>
+          ${fld('핵심 대화', 'record.talk', r.talk, {area: true, rows: 4, ph: '상대가 실제로 한 말 위주로 적어 주세요'})}
+          ${fld('새롭게 알게 된 내용', 'record.learned', r.learned, {area: true, rows: 2})}
+          <div class="fld"><label>내가 한 약속<span class="opt">선택</span></label><p class="hint">내가 하기로 한 일만 적습니다. 저장하면 ‘약속’ 메뉴와 오늘 화면에 연결됩니다.</p></div>
+          ${s.promises.map(rowP).join('')}
+          <button type="button" class="btn sm ghost" data-act="add-row" data-kind="promises">＋ 약속 추가</button>
+          <div class="fld mt16"><label>상대가 말한 계획<span class="opt">선택</span></label><p class="hint">상대의 계획은 내 약속과 따로 저장됩니다.</p></div>
+          ${s.plans.map(rowPl).join('')}
+          <button type="button" class="btn sm ghost" data-act="add-row" data-kind="plans">＋ 계획 추가</button>
+          <div class="mt16">${fld('다음 행동', 'next.action', s.next.action, {ph: '예: 자료 받은 후 소감 묻기'})}</div>
+          <div class="grid2">${fld('다음 연락 날짜', 'next.date', s.next.date, {type: 'date'})}${fld('일정 상태', 'next.scheduleStatus', s.next.scheduleStatus || 'planned', {options: Object.entries(SCHED)})}</div>
+        </div>
+        <details class="fold"><summary>상세 기록 펼치기</summary>
+          ${fld('상대가 직접 말한 관심사', 'record.detail.saidInterests', d.saidInterests, {area: true, rows: 2, hint: '내 해석이 아니라 상대가 직접 한 말을 적습니다.'})}
+          ${fld('내가 제공한 가치', 'record.detail.valueGiven', d.valueGiven, {area: true, rows: 2})}
+          ${fld('반응이 좋았던 질문', 'record.detail.goodQuestions', d.goodQuestions, {area: true, rows: 2})}
+          ${fld('내가 잘한 점', 'record.detail.didWell', d.didWell, {area: true, rows: 2, ph: '설명·경청·약속 이행 관점에서 최대 3가지'})}
+          ${fld('다음에 개선할 점 한 가지', 'record.detail.improve', d.improve)}
+          ${fld('관계 단계 변경', 'stageAfter', s.stageAfter || '', {options: [['', `변경 없음 (현재 ${c.stage}단계 · ${STAGES[c.stage-1]})`], ...stageOpts()]})}
+          ${fld('단계 변경 근거', 'stageReason', s.stageReason, {ph: '예: 본인의 목표를 먼저 이야기해 줌'})}
+        </details>
+        <details class="fold"><summary>옷차림·스타일 (선택 · 나의 기록)</summary>${styleFields(s.style, true)}</details>
+        <details class="fold"><summary>만남 전 준비 내용 보기·수정</summary>${prepFields}</details>`}
+    <button class="btn primary full" type="submit">${mode === 'prep' ? '준비 저장' : '기록 저장'}</button>
+    <p class="draft-state muted small">입력 내용은 자동으로 임시저장됩니다.</p>
+  </form>`;
+}
+
+/* ===== 약속 목록 ===== */
+function vPromises(q){
+  const tab = q.get('tab') || 'open';
+  let list = db.promises.filter(p => cust(p.customerId));
+  if (tab !== 'all') list = list.filter(p => p.status === tab);
+  list.sort((a, b) => tab === 'open' ? (a.dueDate || '9').localeCompare(b.dueDate || '9') : (b.doneDate || b.dueDate || '').localeCompare(a.doneDate || a.dueDate || ''));
+  const tabA = (k, l) => `<a href="#/promises?tab=${k}" class="${tab === k ? 'on' : ''}">${l}</a>`;
+  return `<header class="top"><h1>내 약속</h1><button class="btn primary sm" data-act="promise-new">＋ 약속 추가</button></header>
+  <p class="muted small">내가 상대에게 하기로 한 일입니다. 상대가 말한 계획은 고객 상세에서 따로 봅니다.</p>
+  <div class="tabs">${tabA('open', '진행 중')}${tabA('done', '완료')}${tabA('cancelled', '취소')}${tabA('all', '전체')}</div>
+  ${list.map(p => pCard(p)).join('') || '<div class="empty">해당하는 약속이 없습니다.</div>'}`;
+}
+
+/* ===== 더보기 ===== */
+function vMore(){
+  const n = {c: db.customers.length, m: db.meetings.length, p: db.promises.length};
+  const sampleN = db.customers.filter(c => c.sample).length;
+  return `<header class="top"><h1>더보기</h1></header>
+  <div class="card"><h3>저장 위치: 이 기기</h3>
+    <p>모든 기록은 <b>지금 쓰는 기기의 이 브라우저</b>에만 저장되고, 서버로 전송되지 않습니다.</p>
+    <ul class="small" style="padding-left:20px;margin:8px 0">
+      <li>다른 기기나 다른 브라우저와 자동으로 동기화되지 않습니다.</li>
+      <li>브라우저의 사이트 데이터를 지우거나 기기를 잃어버리면 기록도 사라집니다. <b>백업을 자주 해 주세요.</b></li>
+      <li>잠금 기능이 없으니 다른 사람과 함께 쓰는 기기에서는 사용하지 마세요.</li>
+      <li>고객정보는 본인 동의 범위 안에서 꼭 필요한 것만 기록하세요.</li>
+    </ul>
+    <p class="muted small">사람 ${n.c}명 · 만남 ${n.m}건 · 약속 ${n.p}건 저장됨 · 마지막 백업 ${db.settings.lastBackup ? fd(db.settings.lastBackup) : '없음'}</p></div>
+  <div class="card"><h3>바로가기</h3><div class="grid3">
+    <a class="btn" href="#/messages">메시지</a><a class="btn" href="#/products">제품 자료</a><a class="btn" href="#/styles">스타일 기록</a></div></div>
+  <div class="card"><h3>AI 도우미</h3><p class="muted small" style="margin:0">AI 정리·요약·질문·메시지 초안은 API 키를 안전하게 보관할 서버가 필요해서, 이 버전에서는 쓸 수 없습니다.</p></div>
+  <form class="card" data-form="ordersite"><h3>주문 사이트 주소</h3>
+    ${fld('주소', 'url', db.settings.orderSiteUrl || '', {ph: 'https://', hint: '공식 주문 시스템과는 연결되어 있지 않습니다. 직접 주문할 때 열 주소만 저장합니다.'})}
+    <button class="btn full" type="submit">주소 저장</button></form>
+  <form class="card" data-form="settings"><h3>앱 이름</h3>
+    ${fld('앱 이름', 'appName', db.settings.appName, {noOpt: true, hint: '임시 이름입니다. 뉴스킨 공식 앱으로 오해될 수 있는 이름은 피하세요.'})}
+    <button class="btn full" type="submit">이름 저장</button></form>
+  <div class="card"><h3>데이터 관리</h3>
+    <div class="grid2"><button class="btn" data-act="export">백업 내보내기</button><button class="btn" data-act="import">백업에서 복원</button></div>
+    ${sampleN ? `<button class="btn full mt8" data-act="clear-sample">샘플 데이터만 지우기 (${sampleN}명)</button>` : ''}
+    <button class="btn danger full mt8" data-act="wipe">모든 데이터 삭제</button>
+    <p class="muted small mt8">백업 파일(JSON)에는 입력한 모든 내용이 들어 있으니 안전한 곳에 보관하세요. <b>사진은 백업 파일에 들어가지 않습니다.</b></p></div>
+  <details class="fold"><summary>이 버전에 없는 기능</summary>
+    <p class="muted">아래 기능은 외부 연결이 필요해 이 파일에는 넣지 않았습니다. 화면에 가짜 버튼도 만들지 않았습니다.</p>
+    <ul><li>AI 정리·요약·질문·메시지 초안 (API 키를 보관할 서버 필요)</li><li>자동 문자 발송 (유료 문자 서비스 필요 · 지금은 예약 알림 + 문자 앱 열기)</li><li>뉴스킨 주문 조회·자동 구매 (구매 이력은 수동 기록)</li><li>파트너 교육 관리</li><li>여러 담당자 팀 기능</li></ul></details>
+  <details class="fold"><summary>안전하게 쓰는 방법</summary>
+    <ol><li><b>기록은 이 기기의 이 브라우저에만</b> 저장됩니다. 같은 주소를 쓰는 다른 사람도 내 기록을 볼 수 없습니다.</li>
+      <li>브라우저 데이터를 지우거나 기기를 바꾸면 기록이 사라집니다. <b>백업 내보내기</b>를 자주 하고, 백업 파일은 안전한 곳에 보관하세요.</li>
+      <li>아이폰은 사파리 공유 버튼의 <b>홈 화면에 추가</b>로 열어 쓰세요. 사파리 탭으로만 쓰면 오래 열지 않을 때 기록이 지워질 수 있습니다.</li>
+      <li>사진은 백업 파일에 들어가지 않습니다.</li>
+      <li>잠금 기능이 없으니 다른 사람과 함께 쓰는 기기에서는 사용하지 마세요.</li>
+      <li>고객 정보는 본인 동의 범위 안에서 꼭 필요한 것만 기록하세요.</li></ol></details>
+  <p class="muted small" style="text-align:center">${esc(db.settings.appName)} · 2차 버전 · 뉴스킨 공식 앱이 아닙니다</p>`;
+}
+
+/* ===== 2차 기능: 제품 사용 관리 · 메시지 · 옷차림 · 사진 ===== */
+const PRODUCT_EV = {interest: ['관심 제품', 'amber'], trial: ['체험', 'blue'], start: ['사용 시작', 'blue'], guide: ['안내한 사용 방법', 'gray'],
+  experience: ['고객이 말한 사용 경험', 'blue'], question: ['질문·요청', 'amber'], discomfort: ['불편 사항(고객 발언)', 'red'], purchase: ['구매 (수동 기록)', 'green']};
+const EV_HINT = {
+  interest: '고객이 직접 관심을 표현한 제품만 적습니다. 활동 참여만으로 관심이 있다고 판단하지 않습니다.',
+  trial: '체험한 제품과 기간을 적습니다.', start: '사용을 시작한 날짜와 제품을 적습니다.',
+  guide: '실제로 안내한 사용 방법을 적습니다. 제품 자료의 출처를 확인한 내용만 전하세요.',
+  experience: '고객이 직접 말한 표현을 그대로 적습니다.', question: '고객이 묻거나 요청한 내용을 적습니다.',
+  discomfort: '고객이 말한 그대로 적습니다. ‘호전반응’ 등으로 판단하지 않으며, 필요하면 전문가 상담을 권하세요.',
+  purchase: '공식 주문 시스템과 연결되지 않은 수동 기록입니다.'};
+const REORDER = {undecided: '아직 모름', yes: '재구매 안내를 원함', no: '원하지 않음'};
+const STYLE_BEFORE = [['code', 'OUTFIT CODE'], ['topBottom', '상의·하의'], ['outerShoes', '아우터·신발'], ['bagAcc', '가방·액세서리'],
+  ['hair', '헤어·그루밍'], ['colorMain', '메인 색상'], ['colorSub', '보조 색상'], ['colorPoint', '포인트 색상']];
+const STYLE_SCORES = [['professional', '전문성'], ['friendly', '친근감'], ['healthy', '건강한 이미지'], ['refined', '세련됨'], ['placeFit', '장소 적합성'], ['confidence', '나의 자신감']];
+const SCORE_OPTS = [['', '선택 안 함'], ['1', '1'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5']];
+const WEAR_AGAIN = [['', '선택 안 함'], ['yes', '다시 입겠다'], ['maybe', '고민 중'], ['no', '다시 안 입겠다']];
+const MSG_STATUS = {draft: ['초안', 'gray'], scheduled: ['발송 예약', 'blue'], sent: ['보냄', 'green']};
+const AUTO_SEND_NOTE = '자동 발송은 유료 문자 발송 서비스(발신번호 등록 필요) 연동이 필요해, 예약한 날 ‘오늘’ 화면에 알려 드리고 문자 앱을 열어 드립니다. 보내기 버튼은 직접 누릅니다.';
+
+function avgScore(st){
+  const v = STYLE_SCORES.map(([k]) => Number((st || {})[k])).filter(n => n > 0);
+  return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length * 10) / 10 : null;
+}
+function styleFields(st, withAfter){
+  st = st || {};
+  return `<p class="hint">모두 선택 입력입니다. 상대의 외모로 성격·재력·적합성을 추정하지 않으며, 옷차림이 구매나 신뢰를 만들었다고 단정하지 않습니다.</p>
+    <div class="grid2">${STYLE_BEFORE.map(([k, l]) => fld(l, `style.${k}`, st[k], {noOpt: true})).join('')}</div>
+    ${fld('선택 이유', 'style.reason', st.reason, {area: true, rows: 2, noOpt: true})}
+    ${fld('만남 전 자신감 (1~5)', 'style.confidenceBefore', st.confidenceBefore || '', {options: SCORE_OPTS, noOpt: true})}
+    ${withAfter ? `<p class="hint mt16"><b>만남 후 자기평가 (1~5)</b> · 나의 주관적 평가이며 객관적 점수가 아닙니다.</p>
+      <div class="grid2">${STYLE_SCORES.map(([k, l]) => fld(l, `style.${k}`, st[k] || '', {options: SCORE_OPTS, noOpt: true})).join('')}</div>
+      ${fld('다시 입을지', 'style.wearAgain', st.wearAgain || '', {options: WEAR_AGAIN, noOpt: true})}
+      ${fld('다음에 바꿀 한 가지', 'style.changeOne', st.changeOne, {noOpt: true})}` : ''}
+    <a class="btn sm ghost" href="#/styles">지난 스타일 참고하기</a>`;
+}
+function styleView(st){
+  st = st || {};
+  const rows = STYLE_BEFORE.filter(([k]) => st[k]).map(([k, l]) => `<dt>${l}</dt><dd>${esc(st[k])}</dd>`);
+  const scores = STYLE_SCORES.filter(([k]) => st[k]).map(([k, l]) => `${l} ${esc(st[k])}`).join(' · ');
+  if (!rows.length && !scores && !st.reason && !st.changeOne) return '';
+  const avg = avgScore(st);
+  return `<details class="fold"><summary>옷차림·스타일 (나의 기록)${avg ? ` · 자기평가 평균 ${avg}` : ''}</summary><dl class="kv">
+    ${rows.join('')}${st.reason ? `<dt>선택 이유</dt><dd>${nl(st.reason)}</dd>` : ''}
+    ${st.confidenceBefore ? `<dt>만남 전 자신감</dt><dd>${esc(st.confidenceBefore)} / 5</dd>` : ''}
+    ${scores ? `<dt>만남 후 자기평가 (주관적)</dt><dd>${scores}</dd>` : ''}
+    ${st.wearAgain ? `<dt>다시 입을지</dt><dd>${esc(Object.fromEntries(WEAR_AGAIN)[st.wearAgain] || '')}</dd>` : ''}
+    ${st.changeOne ? `<dt>다음에 바꿀 한 가지</dt><dd>${esc(st.changeOne)}</dd>` : ''}</dl></details>`;
+}
+function cleanObj(o){ const r = {}; for (const k in o || {}) if (o[k] !== '' && o[k] != null) r[k] = o[k]; return r; }
+
+// 제품 사용 관리 (수동 기록)
+function productSection(c){
+  const evs = db.productEvents.filter(e => e.customerId === c.id).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const prods = [...db.products].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+  const site = db.settings.orderSiteUrl;
+  return `<details class="fold" id="prod-fold"><summary>제품 사용 관리 (${evs.length})</summary>
+    <div class="note gold">공식 주문 시스템과 연결되어 있지 않습니다. 아래 내용은 모두 직접 입력한 <b>수동 기록</b>입니다. 제품 안내는 출처와 확인일이 있는 자료로만 전하세요.</div>
+    ${site ? `<a class="btn sm ghost" href="${esc(site)}" target="_blank" rel="noopener">주문 사이트 열기 (직접 주문)</a>` : ''}
+    <form data-form="reorder" class="row gap mt8" style="align-items:flex-end" novalidate><input type="hidden" name="customerId" value="${c.id}">
+      <div class="grow">${fld('재구매 안내 희망 여부 (고객에게 확인한 내용)', 'pref', c.reorderPref || 'undecided', {options: Object.entries(REORDER), noOpt: true})}</div>
+      <button class="btn sm" type="submit" style="margin-bottom:14px">저장</button></form>
+    ${evs.map(e => {
+      const pr = db.products.find(x => x.id === e.productId), fu = e.followupId && db.followups.find(x => x.id === e.followupId);
+      return `<div class="bline"><div class="row between"><div class="grow"><span class="badge ${PRODUCT_EV[e.type][1]}">${PRODUCT_EV[e.type][0]}</span> <b>${esc(e.productName)}</b></div>
+        <button class="btn sm danger" data-act="pev-del" data-id="${e.id}">삭제</button></div>
+        ${e.text ? `<div class="excerpt">${nl(e.text)}</div>` : ''}
+        ${e.amount ? `<div class="meta">금액·수량: ${esc(e.amount)} · 수동 기록</div>` : ''}
+        ${e.type === 'guide' && pr ? `<div class="meta">${pr.source ? `자료 출처: ${esc(pr.source)}${pr.checkedDate ? ' · 확인일 ' + fd(pr.checkedDate) : ''}` : '이 제품 자료에 출처가 없습니다. 제품 자료에서 출처를 적어 주세요.'}</div>` : ''}
+        ${e.followupId ? `<div class="meta">${e.type === 'purchase' ? '재구매 안내' : '사용 경험 확인'} 일정: ${fu ? `${fd(fu.date)} ${fu.status === 'done' ? '· 완료' : fu.status === 'cancelled' ? '· 취소' : '· ' + rel(fu.date)}` : '삭제됨'}</div>` : ''}
+        <div class="meta">${fd(e.date)}</div></div>`;
+    }).join('') || '<div class="empty">제품 기록이 없습니다.</div>'}
+    <form data-form="pevent" class="prow mt8" novalidate><input type="hidden" name="id" value="${uid('pe')}"><input type="hidden" name="customerId" value="${c.id}">
+      <b class="small">제품 기록 추가</b>
+      ${fld('종류', 'type', 'interest', {options: Object.entries(PRODUCT_EV).map(([k, v]) => [k, v[0]]), noOpt: true})}
+      <p class="hint" data-ev-hint></p>
+      ${fld('제품', 'productId', '', {options: [['', '직접 입력'], ...prods.map(p => [p.id, p.name])], hint: '자주 쓰는 제품은 더보기 → 제품 자료에 출처와 함께 등록하세요.'})}
+      ${fld('제품 이름 (직접 입력)', 'productName', '')}
+      ${fld('날짜', 'date', today(), {type: 'date', noOpt: true})}
+      ${fld('내용', 'text', '', {area: true, rows: 2})}
+      <div data-ev="trial start">${fld('사용 경험 확인 날짜 (연락 일정에 등록)', 'checkDate', '', {type: 'date'})}</div>
+      <div data-ev="purchase">${fld('금액·수량', 'amount', '')}${fld('재구매 안내 날짜 (고객이 원한 경우만)', 'noticeDate', '', {type: 'date'})}</div>
+      <button class="btn primary full" type="submit">추가</button></form>
+  </details>`;
+}
+function syncEvForm(){
+  $$('form[data-form=pevent]').forEach(f => {
+    const t = f.elements.type.value;
+    $$('[data-ev]', f).forEach(el => { el.hidden = !el.dataset.ev.split(' ').includes(t); });
+    $('[data-ev-hint]', f).textContent = EV_HINT[t];
+  });
+}
+function vProducts(){
+  const form = (p, isNew) => `<form data-form="product" ${isNew ? 'class="card"' : ''} novalidate><input type="hidden" name="id" value="${p.id}">
+    ${fld('제품 이름', 'name', p.name, {req: true})}${fld('분류', 'category', p.category, {ph: '예: 스킨케어, 웰니스'})}
+    ${fld('사용 방법 안내 (출처 자료 그대로)', 'guide', p.guide, {area: true, rows: 3, hint: '효능·가격은 공식 자료에서 확인한 내용만 적으세요.'})}
+    ${fld('자료 출처', 'source', p.source, {ph: '자료 이름 또는 주소'})}${fld('확인일', 'checkedDate', p.checkedDate, {type: 'date'})}
+    ${fld('메모', 'note', p.note, {area: true, rows: 2})}
+    <button class="btn primary full" type="submit">${isNew ? '제품 추가' : '저장'}</button>
+    ${isNew ? '' : `<button type="button" class="btn danger full mt8" data-act="prod-del" data-id="${p.id}">삭제</button>`}</form>`;
+  const list = [...db.products].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+  return `<header class="top"><a class="back" href="#/more">‹ 더보기</a><h1>제품 자료</h1></header>
+  <p class="muted small">고객에게 안내할 제품 정보를 출처·확인일과 함께 정리합니다.</p>
+  ${list.map(p => `<details class="fold"><summary>${esc(p.name)} ${p.source ? '' : '<span class="badge amber">출처 없음</span>'}</summary>${form(p, false)}</details>`).join('')}
+  <h2 class="sec">새 제품 자료</h2>${form({id: uid('pr'), checkedDate: today()}, true)}`;
+}
+
+// 메시지 (초안 · 발송 예약 → 직접 발송)
+function smsHref(contact, body){ return `sms:${(contact || '').replace(/[^0-9+]/g, '')}?&body=${encodeURIComponent(body)}`; }
+function msgCard(x, {showCust = true} = {}){
+  const c = cust(x.customerId), [label, cls] = MSG_STATUS[x.status] || ['', 'gray'];
+  const late = x.status === 'scheduled' && x.scheduledDate && x.scheduledDate < today();
+  const stopped = c && c.contactStatus === 'stop';
+  return `<div class="item ${late ? 'late' : ''} ${x.status === 'sent' ? 'done' : ''}">
+    <div class="row between"><div class="grow"><span class="badge ${cls}">${label}</span> ${x.scheduledDate ? `<span class="meta">${fd(x.scheduledDate)}${x.scheduledTime ? ' ' + esc(x.scheduledTime) : ''}${x.status === 'scheduled' ? ' · ' + rel(x.scheduledDate) : ''}</span>` : ''}</div></div>
+    ${showCust && c ? `<div class="meta"><a href="#/person/${c.id}">${esc(c.name)}</a></div>` : ''}
+    <div class="excerpt">${nl(x.body)}</div>
+    ${x.status === 'sent' && x.sentAt ? `<div class="meta">보낸 표시: ${new Date(x.sentAt).toLocaleString('ko-KR', {timeZone: 'Asia/Seoul'})}</div>` : ''}
+    ${stopped && x.status !== 'sent' ? '<div class="note red mt8">연락 중단 상태인 고객입니다. 보내지 마세요.</div>' : ''}
+    <div class="row gap wrap mt8">
+      <button class="btn sm ghost" data-act="msg-copy" data-id="${x.id}">복사</button>
+      ${c && c.contact && x.status !== 'sent' && !stopped ? `<a class="btn sm primary" href="${esc(smsHref(c.contact, x.body))}">문자 앱 열기</a>` : ''}
+      <button class="btn sm ghost" data-act="msg-sent" data-id="${x.id}">${x.status === 'sent' ? '보냄 취소' : '보냄 표시'}</button>
+      <button class="btn sm danger" data-act="msg-del" data-id="${x.id}">삭제</button></div></div>`;
+}
+function messageSection(c){
+  const list = db.messages.filter(x => x.customerId === c.id).sort((a, b) => (a.status === 'sent' ? 1 : 0) - (b.status === 'sent' ? 1 : 0) || (a.scheduledDate || '9').localeCompare(b.scheduledDate || '9'));
+  return `<details class="fold" id="msg-fold"><summary>메시지 (${list.length})</summary>
+    ${c.contactStatus === 'stop' ? '<div class="note red">연락 중단 상태라 발송 예약을 할 수 없습니다.</div>' : ''}
+    ${c.contact ? '' : '<p class="hint">연락처가 없어 ‘문자 앱 열기’ 대신 복사해서 보내야 합니다.</p>'}
+    ${list.map(x => msgCard(x, {showCust: false})).join('') || '<div class="empty">메시지가 없습니다.</div>'}
+    <form data-form="message" class="prow mt8" novalidate><input type="hidden" name="id" value="${uid('msg')}"><input type="hidden" name="customerId" value="${c.id}">
+      ${fld('메시지 내용', 'body', '', {area: true, rows: 4, noOpt: true})}
+      <div class="grid2">${fld('보낼 날짜', 'scheduledDate', today(), {type: 'date', noOpt: true})}${fld('시간', 'scheduledTime', '', {type: 'time'})}</div>
+      ${fld('상태', 'status', 'scheduled', {options: [['scheduled', '발송 예약 (그날 오늘 화면에 알림)'], ['draft', '초안으로만 저장']], noOpt: true})}
+      <p class="hint">${AUTO_SEND_NOTE}</p>
+      <button class="btn primary full" type="submit">메시지 저장</button></form></details>`;
+}
+function vMessages(q){
+  const tab = q.get('tab') || 'open';
+  const list = db.messages.filter(x => cust(x.customerId) && (tab === 'sent' ? x.status === 'sent' : x.status !== 'sent'))
+    .sort((a, b) => (a.scheduledDate || '9').localeCompare(b.scheduledDate || '9'));
+  const tabA = (k, l) => `<a href="#/messages?tab=${k}" class="${tab === k ? 'on' : ''}">${l}</a>`;
+  return `<header class="top"><a class="back" href="#/more">‹ 더보기</a><h1>메시지</h1></header>
+  <p class="muted small">${AUTO_SEND_NOTE} 새 메시지는 고객 상세 → 메시지에서 씁니다.</p>
+  <div class="tabs">${tabA('open', '예약·초안')}${tabA('sent', '보냄')}</div>
+  ${list.map(x => msgCard(x)).join('') || '<div class="empty">해당하는 메시지가 없습니다.</div>'}`;
+}
+
+// 옷차림·스타일 모아보기
+function vStyles(q){
+  const kw = (q.get('place') || '').trim();
+  let list = db.meetings.filter(m => cust(m.customerId) && m.style && Object.keys(cleanObj(m.style)).length).sort(byDate).reverse();
+  if (kw) list = list.filter(m => (m.place || '').includes(kw) || (m.purpose || '').includes(kw));
+  const ref = list.filter(m => avgScore(m.style)).sort((a, b) => avgScore(b.style) - avgScore(a.style)).slice(0, 3);
+  const line = s => [s.topBottom, s.outerShoes, s.bagAcc].filter(Boolean).map(esc).join(' / ');
+  return `<header class="top"><a class="back" href="#/more">‹ 더보기</a><h1>옷차림·스타일 기록</h1></header>
+  <p class="muted small">만남마다 남긴 나의 옷차림과 자기평가를 비교합니다. 점수는 나의 주관적 평가이며, 옷차림이 결과를 만들었다고 단정하지 않습니다.</p>
+  <form data-form="stylesearch" class="row gap" style="margin-bottom:12px" novalidate><input class="grow" name="place" value="${esc(kw)}" placeholder="장소·목적으로 찾기 (예: 카페, 러닝)"><button class="btn sm" type="submit">찾기</button></form>
+  ${ref.length ? `<div class="card phase"><span class="phase-label after">참고안 (선택 사항)</span><p class="hint">${kw ? `‘${esc(kw)}’ 관련 만남 중 ` : ''}자기평가 평균이 높았던 조합입니다. 그대로 따를 필요는 없습니다.</p>
+    ${ref.map(m => `<div class="bline"><b>${esc(m.style.code || '이름 없는 조합')}</b> · 평균 ${avgScore(m.style)}<div class="meta">${line(m.style)}${m.style.colorMain ? ' · 메인 ' + esc(m.style.colorMain) : ''}</div><div class="meta">${fd(m.date)} · ${esc(m.place || '')}</div></div>`).join('')}</div>` : ''}
+  ${list.map(m => { const s = m.style, c = cust(m.customerId); return `<a class="item" href="#/meeting/${m.id}">
+    <div class="row between"><div class="item-title grow">${esc(s.code || '옷차림 기록')}</div><span class="meta">${fd(m.date)}</span></div>
+    <div class="meta">${esc([m.place, m.purpose].filter(Boolean).join(' · '))} · ${esc(c.name)}</div>
+    ${line(s) ? `<div class="excerpt">${line(s)}</div>` : ''}
+    <div class="meta">메인 ${esc(s.colorMain || '-')} · 보조 ${esc(s.colorSub || '-')} · 포인트 ${esc(s.colorPoint || '-')}</div>
+    <div class="mt8">${avgScore(s) ? `<span class="badge green">자기평가 ${avgScore(s)}</span>` : '<span class="badge gray">평가 전</span>'} ${s.wearAgain ? `<span class="badge gray">${Object.fromEntries(WEAR_AGAIN)[s.wearAgain]}</span>` : ''}</div>
+    ${s.changeOne ? `<div class="why">다음에 바꿀 것: ${esc(s.changeOne)}</div>` : ''}
+    <div class="photos mt8" data-outfit-of="${m.id}"></div></a>`; }).join('') || '<div class="empty">아직 옷차림 기록이 없습니다. 만남 준비·기록 화면의 ‘옷차림·스타일’에서 남길 수 있습니다.</div>'}`;
+}
+
+// 사진 — 용량이 커서 기록(localStorage)과 분리해 브라우저 사진 저장소(IndexedDB)에 보관
+let photoDbP = null;
+function photoDb(){
+  return photoDbP || (photoDbP = new Promise((ok, bad) => {
+    const r = indexedDB.open('meetcode_photos', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('photos', {keyPath: 'id'});
+    r.onsuccess = () => ok(r.result); r.onerror = () => bad(r.error);
+  }));
+}
+async function photoTx(mode, fn){
+  const d = await photoDb();
+  return new Promise((ok, bad) => {
+    const tx = d.transaction('photos', mode), req = fn(tx.objectStore('photos'));
+    tx.oncomplete = () => ok(req && req.result); tx.onerror = () => bad(tx.error);
+  });
+}
+async function allPhotos(){ return (await photoTx('readonly', st => st.getAll())) || []; }
+async function deletePhotosWhere(pred){
+  try { const ids = (await allPhotos()).filter(pred).map(p => p.id); if (ids.length) await photoTx('readwrite', st => { ids.forEach(id => st.delete(id)); }); } catch(e){}
+}
+function photoBox(ctx, note){
+  return `<div class="photo-box" data-ctx='${esc(JSON.stringify(ctx))}'>${note ? `<p class="hint">${note}</p>` : ''}
+    <div class="photos" data-photo-list><span class="muted small">사진 불러오는 중…</span></div>
+    <div class="row gap mt8"><input class="grow" data-photo-caption placeholder="설명 (선택)"><label class="btn sm">사진 추가<input type="file" accept="image/*" data-photo-input hidden></label></div></div>`;
+}
+async function hydratePhotos(){
+  const boxes = $$('.photo-box'), strips = $$('[data-outfit-of]');
+  if (!boxes.length && !strips.length) return;
+  let list;
+  try { list = await allPhotos(); }
+  catch(e){ boxes.forEach(b => { $('[data-photo-list]', b).innerHTML = '<span class="muted small">이 브라우저에서는 사진을 저장할 수 없습니다.</span>'; }); return; }
+  list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  boxes.forEach(b => {
+    const ctx = JSON.parse(b.dataset.ctx);
+    const mine = list.filter(p => (ctx.meetingId ? p.meetingId === ctx.meetingId : p.customerId === ctx.customerId && !p.meetingId) && p.kind === ctx.kind);
+    $('[data-photo-list]', b).innerHTML = mine.map(p => `<figure><img src="${p.data}" alt="${esc(p.caption || '사진')}"><figcaption>${esc(p.caption || '')}</figcaption>
+      <button class="btn sm danger" data-act="photo-del" data-id="${p.id}">삭제</button></figure>`).join('') || '<span class="muted small">사진이 없습니다.</span>';
+  });
+  strips.forEach(s => { s.innerHTML = list.filter(p => p.meetingId === s.dataset.outfitOf && p.kind === 'outfit').map(p => `<img src="${p.data}" alt="옷차림 사진">`).join(''); });
+}
+function readAsDataURL(file){ return new Promise((ok, bad) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = bad; r.readAsDataURL(file); }); }
+// 화면 크기에 맞게 줄이고 JPG로 다시 저장 → 용량 절약, 위치정보(EXIF) 제거
+async function resizeImage(file, max = 1280){
+  const img = new Image(); img.src = await readAsDataURL(file); await img.decode();
+  const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+  const cv = Object.assign(document.createElement('canvas'), {width: Math.round(img.naturalWidth * k), height: Math.round(img.naturalHeight * k)});
+  cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+  return cv.toDataURL('image/jpeg', 0.82);
+}
+async function uploadPhoto(input){
+  const file = input.files[0]; if (!file) return;
+  const box = input.closest('.photo-box'), ctx = JSON.parse(box.dataset.ctx);
+  try {
+    toast('사진을 저장하는 중…');
+    const data = await resizeImage(file);
+    const customerId = ctx.customerId || (db.meetings.find(m => m.id === ctx.meetingId) || {}).customerId;
+    await photoTx('readwrite', st => st.put({id: uid('ph'), customerId, meetingId: ctx.meetingId || null, kind: ctx.kind,
+      caption: $('[data-photo-caption]', box).value.trim(), data, createdAt: new Date().toISOString()}));
+    toast('사진을 추가했습니다.'); hydratePhotos();
+  } catch(err){ console.error(err); toast('사진을 저장하지 못했습니다. 저장 공간을 확인해 주세요.', 'err'); }
+  input.value = '';
+}
+
+/* ===== 모달 ===== */
+function pickModal(mode){
+  const list = [...db.customers].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+  openModal(`<button class="btn sm ghost x" data-act="close-modal">닫기</button><h2>${mode === 'record' ? '누구를 만났나요?' : '누구를 만날 예정인가요?'}</h2>
+    <input class="search" type="search" placeholder="이름 또는 별칭 검색" data-filter="#pick-list" aria-label="사람 검색">
+    <div id="pick-list" class="pick">${list.map(c => `<a class="pick-item" data-name="${esc(c.name.toLowerCase())}" href="#/meeting/new?c=${c.id}&mode=${mode}">${esc(c.name)} ${badgeStage(c.stage)} ${badgeCS(c.contactStatus)}</a>`).join('') || '<p class="muted">등록된 사람이 없습니다.</p>'}
+    <p class="muted" data-empty hidden>검색 결과가 없습니다.</p></div>
+    <a class="btn full" href="#/people/new">＋ 새 사람 추가</a>`);
+}
+function promiseModal(p, presetC){
+  const isNew = !p;
+  p = p || {id: uid('p'), customerId: presetC || '', meetingId: '', content: '', dueDate: '', status: 'open'};
+  const cs = [...db.customers].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+  if (!cs.length){ toast('먼저 사람을 추가해 주세요.', 'err'); return; }
+  openModal(`<button class="btn sm ghost x" data-act="close-modal">닫기</button><h2>${isNew ? '내 약속 추가' : '약속 수정'}</h2>
+  <form data-form="promise" novalidate><input type="hidden" name="id" value="${p.id}">
+    ${fld('연결 고객', 'customerId', p.customerId, {options: [['', '선택하세요'], ...cs.map(c => [c.id, c.name])], noOpt: true})}
+    <div id="pm-meeting">${meetingSelect(p.customerId, p.meetingId)}</div>
+    ${fld('약속 내용', 'content', p.content, {area: true, rows: 2, noOpt: true, ph: '예: AI 교육 자료 링크 보내기'})}
+    ${fld('완료 예정일', 'dueDate', p.dueDate, {type: 'date'})}
+    ${isNew ? '' : fld('진행 상태', 'status', p.status, {options: Object.entries(PSTATUS), noOpt: true})}
+    <button class="btn primary full" type="submit">저장</button>
+    ${isNew ? '' : `<button type="button" class="btn danger full mt8" data-act="promise-del" data-id="${p.id}">약속 삭제</button>`}
+  </form>`);
+}
+function meetingSelect(cid, mid){
+  const ms = db.meetings.filter(m => m.customerId === cid).sort(byDate).reverse();
+  return fld('연결 만남', 'meetingId', mid || '', {options: [['', '연결 안 함'], ...ms.map(m => [m.id, `${fd(m.date)} · ${m.place || '장소 미입력'}${m.status === 'done' ? '' : ' (예정)'}`])]});
+}
+
+/* ===== 동작 ===== */
+const today_ = () => today();
+const actions = {
+  'pick': el => { if (!db.customers.length){ toast('먼저 사람을 추가해 주세요.', 'err'); go('/people/new'); return; } pickModal(el.dataset.mode); },
+  'close-modal': closeModal,
+  'promise-done': el => setPromise(el.dataset.id, 'done'),
+  'promise-undo': el => setPromise(el.dataset.id, 'open'),
+  'promise-new': el => promiseModal(null, el.dataset.c),
+  'promise-edit': el => promiseModal(db.promises.find(p => p.id === el.dataset.id)),
+  'promise-del': el => { if (!confirm('이 약속을 삭제할까요? 되돌릴 수 없습니다.')) return; if (commit(d => { d.promises = d.promises.filter(p => p.id !== el.dataset.id); })){ toast('약속을 삭제했습니다.'); closeModal(); rerender(); } },
+  'fu-done': el => setFollowup(el.dataset.id, 'done'),
+  'fu-cancel': el => setFollowup(el.dataset.id, 'cancelled'),
+  'fu-reopen': el => setFollowup(el.dataset.id, 'open'),
+  'stage': el => {
+    const c = cust(el.dataset.id);
+    openModal(`<button class="btn sm ghost x" data-act="close-modal">닫기</button><h2>관계 단계 변경</h2>
+      <p class="muted small">운영자의 관계 정리용 분류입니다. 이전 단계로 바꿀 수도 있습니다.</p>
+      <form data-form="stage" novalidate><input type="hidden" name="customerId" value="${c.id}">
+        ${fld('바꿀 단계', 'to', c.stage, {options: stageOpts(), noOpt: true})}
+        ${fld('변경 날짜', 'date', today(), {type: 'date', noOpt: true})}
+        ${fld('변경 근거', 'reason', '', {area: true, rows: 2, noOpt: true, ph: '예: 본인이 먼저 다음 만남을 제안함'})}
+        <button class="btn primary full" type="submit">단계 변경 저장</button></form>`);
+  },
+  'del-customer': el => {
+    const id = el.dataset.id, c = cust(id);
+    const nm = db.meetings.filter(m => m.customerId === id).length, np = db.promises.filter(p => p.customerId === id).length;
+    const nf = db.followups.filter(f => f.customerId === id).length, npl = db.plans.filter(p => p.customerId === id).length;
+    openModal(`<button class="btn sm ghost x" data-act="close-modal">닫기</button><h2>‘${esc(c.name)}’ 삭제</h2>
+      <div class="note red">삭제하면 이 사람과 연결된 기록도 <b>함께 영구 삭제</b>됩니다.<br>만남 ${nm}건 · 내 약속 ${np}건 · 상대 계획 ${npl}건 · 연락 일정 ${nf}건</div>
+      <p class="muted small">관계를 잠시 멈추는 것이라면 삭제 대신 ‘연락 중단’으로 보관하면 기록은 남고 연락 제안에서만 빠집니다. 삭제 전에 ‘더보기 → 백업 내보내기’를 권장합니다.</p>
+      <button class="btn full" data-act="archive-customer" data-id="${id}">삭제하지 않고 ‘연락 중단’으로 보관</button>
+      <button class="btn danger full mt8" data-act="del-customer-confirm" data-id="${id}">연결된 기록까지 모두 삭제</button>`);
+  },
+  'archive-customer': el => {
+    if (commit(d => { const c = d.customers.find(x => x.id === el.dataset.id); c.contactStatus = 'stop'; c.statusReason = c.statusReason || '보관 처리'; (c.contactLog = c.contactLog || []).push({date: today(), status: 'stop', reason: '삭제 대신 보관'}); })){ toast('연락 중단 상태로 보관했습니다.'); rerender(); }
+  },
+  'del-customer-confirm': el => {
+    const id = el.dataset.id;
+    if (commit(d => { d.customers = d.customers.filter(c => c.id !== id); for (const k of ['meetings', 'promises', 'plans', 'followups', 'productEvents', 'messages']) d[k] = d[k].filter(x => x.customerId !== id); })){
+      deletePhotosWhere(p => p.customerId === id);
+      clearDraft('customer:' + id); toast('사람과 연결된 기록을 삭제했습니다.'); go('/people');
+    }
+  },
+  'del-meeting': el => {
+    const id = el.dataset.id, np = db.promises.filter(p => p.meetingId === id).length;
+    openModal(`<button class="btn sm ghost x" data-act="close-modal">닫기</button><h2>만남 삭제</h2>
+      <div class="note red">이 만남 기록과 상대가 말한 계획, 이 만남에서 정한 연락 일정이 삭제됩니다. 만남 횟수와 최근 만남 날짜는 남은 기록으로 다시 계산됩니다.</div>
+      ${np ? `<p>이 만남에서 한 내 약속이 <b>${np}건</b> 있습니다.</p>
+      <button class="btn full" data-act="del-meeting-confirm" data-id="${id}" data-with="0">만남만 삭제 (약속은 유지)</button>
+      <button class="btn danger full mt8" data-act="del-meeting-confirm" data-id="${id}" data-with="1">약속까지 함께 삭제</button>`
+      : `<button class="btn danger full" data-act="del-meeting-confirm" data-id="${id}" data-with="0">삭제</button>`}`);
+  },
+  'del-meeting-confirm': el => {
+    const id = el.dataset.id, withP = el.dataset.with === '1', m = db.meetings.find(x => x.id === id), cid = m && m.customerId;
+    if (commit(d => {
+      d.meetings = d.meetings.filter(x => x.id !== id); d.plans = d.plans.filter(x => x.meetingId !== id); d.followups = d.followups.filter(x => x.meetingId !== id);
+      d.promises = withP ? d.promises.filter(x => x.meetingId !== id) : d.promises.map(x => x.meetingId === id ? {...x, meetingId: null} : x);
+    })){ deletePhotosWhere(p => p.meetingId === id); ['prep', 'record'].forEach(md => clearDraft(`meeting:${id}:${md}`)); toast('만남을 삭제했습니다.'); go(cid ? '/person/' + cid : '/meetings'); }
+  },
+  'cancel-meeting': el => { if (commit(d => { d.meetings.find(x => x.id === el.dataset.id).status = 'cancelled'; })){ toast('만남을 취소로 표시했습니다. 만남 횟수에는 포함되지 않습니다.'); rerender(); } },
+  'restore-meeting': el => { if (commit(d => { d.meetings.find(x => x.id === el.dataset.id).status = 'planned'; })){ toast('예정된 만남으로 되돌렸습니다.'); rerender(); } },
+  'add-row': el => editRows(el, s => s[el.dataset.kind].push(el.dataset.kind === 'promises' ? {id: uid('p'), content: '', dueDate: ''} : {id: uid('pl'), content: ''})),
+  'rm-row': el => editRows(el, s => s[el.dataset.kind].splice(+el.dataset.idx, 1)),
+  'discard-draft': el => { clearDraft(el.dataset.key); toast('임시저장을 지웠습니다.'); route(); },
+  'clear-sample': () => {
+    if (!confirm('샘플로 넣은 가상 고객과 연결 기록만 지웁니다. 계속할까요?')) return;
+    const ids = new Set(db.customers.filter(c => c.sample).map(c => c.id));
+    if (commit(d => { d.customers = d.customers.filter(c => !ids.has(c.id)); for (const k of ['meetings', 'promises', 'plans', 'followups']) d[k] = d[k].filter(x => !ids.has(x.customerId)); })){ toast('샘플 데이터를 지웠습니다.'); rerender(); }
+  },
+  'wipe': () => {
+    if (!confirm('모든 사람·만남·약속을 삭제합니다. 되돌릴 수 없습니다. 계속할까요?')) return;
+    const name = db.settings.appName;
+    if (commit(d => { Object.assign(d, emptyDb()); d.settings.appName = name; })){
+      try { Object.keys(localStorage).filter(k => k.startsWith(DKEY)).forEach(k => localStorage.removeItem(k)); } catch(e){}
+      deletePhotosWhere(() => true);
+      toast('모든 데이터를 삭제했습니다.'); go('/today');
+    }
+  },
+  'export': () => {
+    const blob = new Blob([JSON.stringify({...db, exportedAt: new Date().toISOString()}, null, 2)], {type: 'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `meetcode-backup-${today()}.json`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    commit(d => { d.settings.lastBackup = today(); });
+    toast('백업 파일을 만들었습니다. 안전한 곳에 보관하세요.'); rerender();
+  },
+  'import': () => $('#import-file').click(),
+  'photo-del': async el => {
+    if (!confirm('이 사진을 삭제할까요?')) return;
+    try { await photoTx('readwrite', st => st.delete(el.dataset.id)); toast('사진을 삭제했습니다.'); hydratePhotos(); }
+    catch(e){ toast('사진을 삭제하지 못했습니다.', 'err'); }
+  },
+  'pev-del': el => {
+    if (!confirm('이 제품 기록을 삭제할까요? 아직 하지 않은 확인·안내 일정도 함께 지웁니다.')) return;
+    const e = db.productEvents.find(x => x.id === el.dataset.id); if (!e) return;
+    if (commit(d => {
+      d.productEvents = d.productEvents.filter(x => x.id !== e.id);
+      if (e.followupId) d.followups = d.followups.filter(f => !(f.id === e.followupId && f.status === 'open'));
+    })){ toast('제품 기록을 삭제했습니다.'); rerender(); }
+  },
+  'prod-del': el => {
+    if (!confirm('이 제품 자료를 삭제할까요? 고객별 제품 기록은 남습니다.')) return;
+    if (commit(d => { d.products = d.products.filter(p => p.id !== el.dataset.id); })){ toast('제품 자료를 삭제했습니다.'); rerender(); }
+  },
+  'msg-copy': async el => {
+    const x = db.messages.find(m => m.id === el.dataset.id); if (!x) return;
+    try { await navigator.clipboard.writeText(x.body); }
+    catch(e){ const t = Object.assign(document.createElement('textarea'), {value: x.body}); document.body.append(t); t.select(); document.execCommand('copy'); t.remove(); }
+    toast('복사했습니다.');
+  },
+  'msg-sent': el => {
+    if (commit(d => { const x = d.messages.find(m => m.id === el.dataset.id); if (!x) return; const sent = x.status !== 'sent'; x.status = sent ? 'sent' : 'draft'; x.sentAt = sent ? new Date().toISOString() : null; })){ toast('표시했습니다.'); rerender(); }
+  },
+  'msg-del': el => {
+    if (!confirm('이 메시지를 삭제할까요?')) return;
+    if (commit(d => { d.messages = d.messages.filter(m => m.id !== el.dataset.id); })){ toast('메시지를 삭제했습니다.'); rerender(); }
+  },
+};
+// 접어 둔 영역 안에서 저장한 뒤 다시 그려도 그 영역이 열려 있게 한다
+function rerenderOpen(sel){ rerender(); const el = $(sel); if (el) el.open = true; }
+function setPromise(id, status){
+  const ok = commit(d => { const p = d.promises.find(x => x.id === id); if (!p) return; p.status = status; p.doneDate = status === 'done' ? (p.doneDate || today()) : null; });
+  if (ok){ toast(status === 'done' ? '약속을 완료로 표시했습니다. 모든 화면에 반영됩니다.' : '진행 중으로 되돌렸습니다.'); rerender(); }
+}
+function setFollowup(id, status){
+  const ok = commit(d => { const f = d.followups.find(x => x.id === id); if (!f) return; f.status = status; f.doneDate = status === 'done' ? today() : null; });
+  if (ok){ toast(status === 'done' ? '연락 완료로 표시했습니다.' : status === 'cancelled' ? '연락 일정을 취소했습니다.' : '다시 열었습니다.'); rerender(); }
+}
+// 입력 중인 폼을 상태로 읽어 행을 추가·삭제한 뒤 같은 상태로 다시 그린다.
+function editRows(el, fn){
+  const f = el.closest('form'); const s = normState(formObj(f)); fn(s);
+  writeDraft(f.dataset.draft, s); skipDraftNotice = true; rerender();
+}
+
+/* ===== 저장 처리 ===== */
+const submits = {
+  customer(f){
+    const d = trimAll(formObj(f));
+    if (!d.name){ toast('이름 또는 별칭을 입력해 주세요.', 'err'); f.elements.name.focus(); return; }
+    lock(f);
+    const t = today(), now = new Date().toISOString();
+    const ok = commit(db => {
+      let c = db.customers.find(x => x.id === d.id);
+      if (!c){ const st = +d.stage || 1; c = {id: d.id, createdAt: now, stage: st, stageHistory: [{date: t, from: null, to: st, reason: '처음 등록'}], contactLog: [], contactStatus: 'active'}; db.customers.push(c); }
+      const prev = c.contactStatus, next = d.contactStatus || c.contactStatus || 'active';
+      Object.assign(c, {name: d.name, source: d.source || '', tags: (d.tags || '').split(',').map(x => x.trim()).filter(Boolean),
+        interests: d.interests || '', contact: d.contact || '', job: d.job || '', contactPref: d.contactPref || '',
+        contactStatus: next, statusReason: d.statusReason || '', memo: d.memo || '', updatedAt: now});
+      if (prev !== next) c.contactLog.push({date: t, status: next, reason: c.statusReason});
+    });
+    if (ok){ f.dataset.saved = '1'; clearDraft(f.dataset.draft); toast('저장했습니다.'); go('/person/' + d.id); } else unlock(f);
+  },
+  meeting(f){
+    const mode = f.dataset.mode, d = normState(trimAll(formObj(f)));
+    if (!d.date){ toast('만남 날짜를 입력해 주세요.', 'err'); f.elements.date.focus(); return; }
+    lock(f);
+    const now = new Date().toISOString();
+    const ok = commit(db => {
+      const c = db.customers.find(x => x.id === d.customerId); if (!c) throw new Error('고객 없음');
+      let m = db.meetings.find(x => x.id === d.id);
+      if (!m){ m = {id: d.id, customerId: d.customerId, createdAt: now, status: 'planned', stageAtMeeting: c.stage}; db.meetings.push(m); }
+      Object.assign(m, {date: d.date, time: d.time || '', place: d.place || '', purpose: d.purpose || '', prep: d.prep, updatedAt: now});
+      m.style = cleanObj({...(m.style || {}), ...d.style});
+      if (mode !== 'record') return;
+      m.record = d.record; m.status = 'done'; m.recordedAt = m.recordedAt || now;
+      // 내 약속: 행마다 미리 만든 id로 upsert → 중복 저장돼도 한 건만 남는다.
+      const keepP = new Set();
+      for (const r of d.promises.filter(x => x.content)){
+        keepP.add(r.id);
+        let p = db.promises.find(x => x.id === r.id);
+        if (!p){ p = {id: r.id, customerId: m.customerId, meetingId: m.id, createdDate: m.date, status: 'open', doneDate: null}; db.promises.push(p); }
+        p.content = r.content; p.dueDate = r.dueDate || '';
+      }
+      db.promises = db.promises.filter(x => x.meetingId !== m.id || keepP.has(x.id));
+      const keepPl = new Set();
+      for (const r of d.plans.filter(x => x.content)){
+        keepPl.add(r.id);
+        let p = db.plans.find(x => x.id === r.id);
+        if (!p){ p = {id: r.id, customerId: m.customerId, meetingId: m.id}; db.plans.push(p); }
+        p.content = r.content; p.date = m.date;
+      }
+      db.plans = db.plans.filter(x => x.meetingId !== m.id || keepPl.has(x.id));
+      const n = d.next;
+      if (n.action || n.date){
+        let fu = db.followups.find(x => x.id === n.followupId);
+        if (!fu){ fu = {id: n.followupId, customerId: m.customerId, meetingId: m.id, status: 'open'}; db.followups.push(fu); }
+        Object.assign(fu, {action: n.action || '', date: n.date || '', scheduleStatus: n.scheduleStatus || 'undecided'});
+      } else db.followups = db.followups.filter(x => x.id !== n.followupId);
+      const to = +d.stageAfter;
+      if (to && to !== c.stage){
+        (c.stageHistory = c.stageHistory || []).push({date: m.date, from: c.stage, to, reason: d.stageReason || '', meetingId: m.id});
+        c.stage = to; m.stageAfter = to; m.stageReason = d.stageReason || '';
+      }
+    });
+    if (ok){ f.dataset.saved = '1'; clearDraft(f.dataset.draft); toast(mode === 'record' ? '만남 기록을 저장했습니다.' : '만남 준비를 저장했습니다.'); go('/meeting/' + d.id); }
+    else { unlock(f); saveDraft(f); }
+  },
+  promise(f){
+    const d = trimAll(formObj(f));
+    if (!d.customerId){ toast('연결 고객을 선택해 주세요.', 'err'); return; }
+    if (!d.content){ toast('약속 내용을 입력해 주세요.', 'err'); return; }
+    lock(f);
+    const ok = commit(db => {
+      let p = db.promises.find(x => x.id === d.id);
+      if (!p){ p = {id: d.id, createdDate: today(), status: 'open', doneDate: null}; db.promises.push(p); }
+      Object.assign(p, {customerId: d.customerId, meetingId: d.meetingId || null, content: d.content, dueDate: d.dueDate || ''});
+      if (d.status && d.status !== p.status){ p.status = d.status; p.doneDate = d.status === 'done' ? today() : null; }
+    });
+    if (ok){ toast('약속을 저장했습니다.'); closeModal(); rerender(); } else unlock(f);
+  },
+  stage(f){
+    const d = trimAll(formObj(f)), c = cust(d.customerId), to = +d.to;
+    if (to === c.stage){ toast('현재 단계와 같습니다.', 'err'); return; }
+    if (!d.reason){ toast('변경 근거를 짧게 남겨 주세요.', 'err'); return; }
+    lock(f);
+    if (commit(db => { const x = db.customers.find(y => y.id === c.id); (x.stageHistory = x.stageHistory || []).push({date: d.date || today(), from: x.stage, to, reason: d.reason}); x.stage = to; })){ toast('관계 단계를 변경했습니다.'); closeModal(); rerender(); } else unlock(f);
+  },
+  settings(f){
+    const name = f.elements.appName.value.trim();
+    if (!name){ toast('앱 이름을 입력해 주세요.', 'err'); return; }
+    if (commit(db => { db.settings.appName = name; })){ toast('앱 이름을 저장했습니다.'); rerender(); }
+  },
+  ordersite(f){
+    const url = f.elements.url.value.trim();
+    if (url && !/^https?:\/\//.test(url)){ toast('주소는 http:// 또는 https:// 로 시작해야 합니다.', 'err'); return; }
+    if (commit(db => { db.settings.orderSiteUrl = url; })){ toast('주문 사이트 주소를 저장했습니다.'); rerender(); }
+  },
+  stylesearch(f){ const v = f.elements.place.value.trim(); go('/styles' + (v ? '?place=' + encodeURIComponent(v) : '')); },
+  product(f){
+    const d = trimAll(formObj(f));
+    if (!d.name){ toast('제품 이름을 입력해 주세요.', 'err'); return; }
+    lock(f);
+    const ok = commit(db => {
+      let p = db.products.find(x => x.id === d.id);
+      if (!p){ p = {id: d.id, createdAt: new Date().toISOString()}; db.products.push(p); }
+      Object.assign(p, {name: d.name, category: d.category || '', guide: d.guide || '', source: d.source || '', checkedDate: d.checkedDate || '', note: d.note || ''});
+    });
+    if (ok){ toast('제품 자료를 저장했습니다.'); rerender(); } else unlock(f);
+  },
+  reorder(f){
+    const d = formObj(f);
+    if (commit(db => { db.customers.find(c => c.id === d.customerId).reorderPref = d.pref; })){ toast('저장했습니다.'); rerenderOpen('#prod-fold'); }
+  },
+  pevent(f){
+    const d = trimAll(formObj(f)), c = cust(d.customerId), pr = db.products.find(p => p.id === d.productId);
+    const name = d.productName || (pr && pr.name);
+    if (!name){ toast('제품을 고르거나 이름을 입력해 주세요.', 'err'); return; }
+    if (d.type === 'purchase' && d.noticeDate && c.reorderPref !== 'yes'){ toast('고객이 재구매 안내를 원한다고 기록한 경우에만 안내 날짜를 정할 수 있습니다.', 'err'); return; }
+    lock(f);
+    const ok = commit(db => {
+      if (db.productEvents.some(e => e.id === d.id)) return;   // 중복 저장 방지
+      let followupId = null;
+      const plan = (d.type === 'trial' || d.type === 'start') && d.checkDate ? ['product_check', `제품 사용 경험 확인: ${name}`, d.checkDate]
+        : d.type === 'purchase' && d.noticeDate ? ['reorder', `재구매 안내: ${name}`, d.noticeDate] : null;
+      if (plan){
+        followupId = uid('f');
+        db.followups.push({id: followupId, customerId: c.id, meetingId: null, kind: plan[0], action: plan[1], date: plan[2], scheduleStatus: 'planned', status: 'open'});
+      }
+      db.productEvents.push({id: d.id, customerId: c.id, productId: pr ? pr.id : null, productName: name, type: d.type, date: d.date || today(),
+        text: d.text || '', amount: d.type === 'purchase' ? (d.amount || '') : '', followupId, createdAt: new Date().toISOString()});
+    });
+    if (ok){ toast(d.checkDate || d.noticeDate ? '제품 기록과 연락 일정을 저장했습니다.' : '제품 기록을 저장했습니다.'); rerenderOpen('#prod-fold'); } else unlock(f);
+  },
+  message(f){
+    const d = trimAll(formObj(f)), c = cust(d.customerId);
+    if (!d.body){ toast('메시지 내용을 입력해 주세요.', 'err'); return; }
+    if (d.status === 'scheduled' && !d.scheduledDate){ toast('보낼 날짜를 입력해 주세요.', 'err'); return; }
+    if (d.status === 'scheduled' && c.contactStatus === 'stop'){ toast('연락 중단 상태인 고객에게는 발송을 예약할 수 없습니다.', 'err'); return; }
+    lock(f);
+    const ok = commit(db => {
+      if (db.messages.some(x => x.id === d.id)) return;   // 중복 저장 방지
+      db.messages.push({id: d.id, customerId: c.id, body: d.body, scheduledDate: d.scheduledDate || '', scheduledTime: d.scheduledTime || '',
+        status: d.status, sentAt: null, createdAt: new Date().toISOString()});
+    });
+    if (ok){ toast('메시지를 저장했습니다.'); rerenderOpen('#msg-fold'); } else unlock(f);
+  },
+};
+
+/* ===== 이벤트 ===== */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const fn = actions[el.dataset.act]; if (!fn) return;
+  e.preventDefault();
+  if (el.dataset.busy) return;               // 연속 클릭 방지
+  el.dataset.busy = '1'; setTimeout(() => { delete el.dataset.busy; }, 600);
+  fn(el, e);
+});
+document.addEventListener('submit', e => {
+  const f = e.target; if (!f.dataset.form) return;
+  e.preventDefault();
+  if (f.dataset.busy || f.dataset.saved) return;   // 중복 저장 방지
+  submits[f.dataset.form](f);
+});
+document.addEventListener('input', e => {
+  const flt = e.target.closest('[data-filter]');
+  if (flt){
+    const q = flt.value.trim().toLowerCase(), box = $(flt.dataset.filter); let shown = 0;
+    $$('[data-name]', box).forEach(x => { const on = x.dataset.name.includes(q); x.hidden = !on; if (on) shown++; });
+    const em = $('[data-empty]', box); if (em) em.hidden = shown > 0 || !$$('[data-name]', box).length;
+    return;
+  }
+  const f = e.target.closest('form[data-draft]');
+  if (f){ clearTimeout(draftTimer); draftTimer = setTimeout(() => saveDraft(f), 400); }
+});
+document.addEventListener('change', e => {
+  if (e.target.matches('[data-photo-input]')){ uploadPhoto(e.target); return; }
+  if (e.target.name === 'type' && e.target.closest('form[data-form=pevent]')){ syncEvForm(); return; }
+  if (e.target.name === 'customerId' && e.target.closest('form[data-form=promise]')) $('#pm-meeting').innerHTML = meetingSelect(e.target.value, '');
+  const f = e.target.closest('form[data-draft]'); if (f) saveDraft(f);
+});
+$('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#modal').hidden) closeModal(); });
+window.addEventListener('pagehide', () => saveDraft($('form[data-draft]')));
+document.addEventListener('visibilitychange', () => { if (document.hidden) saveDraft($('form[data-draft]')); });
+window.addEventListener('hashchange', () => route());
+window.addEventListener('storage', e => { if (e.key === KEY){ load(); rerender(); } });
+$('#import-file').addEventListener('change', async e => {
+  const file = e.target.files[0]; e.target.value = ''; if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (!['customers', 'meetings', 'promises'].every(k => Array.isArray(data[k]))) throw new Error('형식 오류');
+    if (!confirm(`백업 파일: 사람 ${data.customers.length}명 · 만남 ${data.meetings.length}건 · 약속 ${data.promises.length}건\n지금 데이터를 이 내용으로 바꿀까요?`)) return;
+    if (commit(d => { const e0 = emptyDb(); delete data.exportedAt; Object.assign(d, e0, data); })){ toast('백업에서 복원했습니다.'); go('/today'); }
+  } catch(err){ toast('백업 파일을 읽을 수 없습니다. AI 고객관리 자동화에서 내보낸 JSON 파일인지 확인해 주세요.', 'err'); }
+});
+
+load();
+route();
+// 브라우저가 저장 공간 부족 시 데이터를 임의로 지우지 않도록 요청한다 (지원 브라우저만).
+try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch(e){}
+</script>
+</body>
+</html>
