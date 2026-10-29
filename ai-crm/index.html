@@ -191,6 +191,7 @@ function load(){
   catch(e){ storageOk = false; db = emptyDb(); }
   const e = emptyDb(); for (const k in e) if (db[k] == null) db[k] = e[k];
   if (!db.settings.appName || db.settings.appName === 'MEET CODE') db.settings.appName = e.settings.appName;  // 예전 기본 이름은 새 이름으로
+  for (const k of Object.keys(db.settings)) if (k.startsWith('sheets')) delete db.settings[k];   // 없앤 구글 시트 연결의 설정값
 }
 function persist(){
   if (window.__mcFailNextSave){ window.__mcFailNextSave = false; throw new Error('테스트용 저장 실패'); }
@@ -199,7 +200,7 @@ function persist(){
 // 변경을 한 번에 적용하고, 저장에 실패하면 메모리 상태도 되돌린다.
 function commit(fn){
   const snap = JSON.stringify(db);
-  try { fn(db); persist(); scheduleSheets(); scheduleNotion(); return true; }
+  try { fn(db); persist(); scheduleNotion(); return true; }
   catch(err){
     db = JSON.parse(snap); console.error(err);
     toast('저장하지 못했습니다. 입력한 내용은 그대로 남아 있으니 다시 시도해 주세요.', 'err');
@@ -734,7 +735,7 @@ function vMore(){
   const sampleN = db.customers.filter(c => c.sample).length;
   return `<header class="top"><h1>더보기</h1></header>
   <div class="card"><h3>저장 위치: 이 기기</h3>
-    <p>모든 기록은 <b>지금 쓰는 기기의 이 브라우저</b>에만 저장되고, 서버로 전송되지 않습니다. (아래 구글 시트 연결을 켠 경우에만 <b>내 구글 시트</b>로 보냅니다)</p>
+    <p>모든 기록은 <b>지금 쓰는 기기의 이 브라우저</b>에만 저장되고, 서버로 전송되지 않습니다. (아래 노션 DB 연결을 켠 경우에만 <b>내 노션</b>으로 보냅니다)</p>
     <ul class="small" style="padding-left:20px;margin:8px 0">
       <li>다른 기기나 다른 브라우저와 자동으로 동기화되지 않습니다.</li>
       <li>브라우저의 사이트 데이터를 지우거나 기기를 잃어버리면 기록도 사라집니다. <b>백업을 자주 해 주세요.</b></li>
@@ -745,7 +746,6 @@ function vMore(){
   <div class="card"><h3>바로가기</h3><div class="grid3">
     <a class="btn" href="#/messages">메시지</a><a class="btn" href="#/products">제품 자료</a><a class="btn" href="#/styles">스타일 기록</a></div></div>
   ${notionCard()}
-  ${sheetsCard()}
   <div class="card"><h3>AI 도우미</h3><p class="muted small" style="margin:0">AI 정리·요약·질문·메시지 초안은 API 키를 안전하게 보관할 서버가 필요해서, 이 버전에서는 쓸 수 없습니다.</p></div>
   <form class="card" data-form="ordersite"><h3>주문 사이트 주소</h3>
     ${fld('주소', 'url', db.settings.orderSiteUrl || '', {ph: 'https://', hint: '공식 주문 시스템과는 연결되어 있지 않습니다. 직접 주문할 때 열 주소만 저장합니다.'})}
@@ -771,106 +771,18 @@ function vMore(){
   <p class="muted small" style="text-align:center">${esc(db.settings.appName)} · 2차 버전 · 뉴스킨 공식 앱이 아닙니다</p>`;
 }
 
-/* ===== 구글 시트로 보내기 (보기·백업용 · 앱 → 시트 한 방향) ===== */
-const SHEETS_PREFIX = 'https://script.google.com/';
-const SHEETS_AUTO_DELAY = 20000;   // 마지막 변경 뒤 20초 동안 더 바뀌지 않으면 보낸다
+/* ===== 기록 변경 확인 · 연락처 제외 ===== */
 const PHONE_RE = /0\d{1,2}[-. ]?\d{3,4}[-. ]?\d{4}/g, EMAIL_RE = /[\w.+-]+@[\w-]+\.[\w.]+/g;
-// 사용자가 구글 시트의 Apps Script에 붙여 넣는 코드. 토큰이 맞을 때만 기록을 받아 탭별로 덮어쓴다.
-const APPS_SCRIPT = `// AI 고객관리 자동화 → 구글 시트 (보기·백업용)
-// 이 코드를 Apps Script에 붙여 넣고 '웹 앱'으로 배포하세요.
-const TOKEN = '__TOKEN__';
-
-function doPost(e) {
-  const body = JSON.parse(e.postData.contents);
-  if (body.token !== TOKEN) return reply({ok: false, error: 'token'});
-  const lock = LockService.getScriptLock();
-  if (!lock.tryLock(30000)) return reply({ok: false, error: 'busy'});
-  try { return reply(receive(body)); } finally { lock.releaseLock(); }
-}
-
-function receive(body) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const counts = {};
-  Object.keys(body.sheets).forEach(function (name) {
-    const rows = body.sheets[name];
-    const sh = ss.getSheetByName(name) || ss.insertSheet(name);
-    sh.clearContents();
-    if (rows.length) {
-      sh.getRange(1, 1, rows.length, rows[0].length).setValues(rows);
-      sh.setFrozenRows(1);
-      sh.getRange(1, 1, 1, rows[0].length).setFontWeight('bold');
-    }
-    counts[name] = Math.max(rows.length - 1, 0);
-  });
-  const info = ss.getSheetByName('보낸 기록') || ss.insertSheet('보낸 기록');
-  if (info.getLastRow() === 0) info.appendRow(['보낸 시각', '앱', '내용']);
-  info.appendRow([body.sent_at, body.app, JSON.stringify(counts)]);
-  return {ok: true, counts: counts};
-}
-
-function reply(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
-}
-`;
-let sheetsTimer = null, sheetsBusy = false;
-
-function sheetsToken(){
-  if (!db.settings.sheetsToken){
-    const b = crypto.getRandomValues(new Uint8Array(18));
-    const t = btoa(String.fromCharCode(...b)).replace(/[+/=]/g, c => ({'+': '-', '/': '_', '=': ''}[c]));
-    commit(d => { d.settings.sheetsToken = t; });
-  }
-  return db.settings.sheetsToken;
-}
-function sheetsScript(){ return APPS_SCRIPT.replace('__TOKEN__', sheetsToken()); }
-// 시트 칸 값. '=' 등으로 시작하는 글이 수식으로 실행되지 않게 앞에 ' 를 붙인다.
-function sheetCell(v){
-  if (v == null) return '';
-  if (typeof v === 'number') return v;
-  v = String(v);
-  return '=+-@'.includes(v[0]) ? "'" + v : v;
-}
 // 기록이 바뀌었는지 판단하는 값 (설정·백업 날짜는 빼고 비교한다)
-function sheetsStamp(){
+function dataStamp(){
   const {settings, ...rest} = db;
   const s = JSON.stringify(rest); let h = 0;
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
   return s.length + ':' + h;
 }
-function sheetsPayload(){
-  const withContact = !!db.settings.sheetsContact;
-  const txt = v => (v == null || withContact) ? v : String(v).replace(PHONE_RE, '[연락처 제외]').replace(EMAIL_RE, '[이메일 제외]');
-  const name = id => (cust(id) || {}).name || '';
-  const dt = s => s ? new Date(new Date(s).getTime() + 9 * 3600e3).toISOString().slice(0, 16).replace('T', ' ') : '';   // 한국 시간
-  const out = {};
-  const custs = [...db.customers].sort((a, b) => a.name.localeCompare(b.name, 'ko'));
-  out['고객'] = [['이름', ...(withContact ? ['연락처'] : []), '직업·활동', '처음 알게 된 계기', '관계 단계', '연락 상태', '관심 활동 태그',
-    '관심사', '최근 만남', '만남 횟수', '재구매 안내', '메모', '등록일', '수정일'],
-    ...custs.map(c => { const s = stats(c.id); return [c.name, ...(withContact ? [c.contact] : []), txt(c.job), txt(c.source),
-      `${c.stage}단계 · ${STAGES[c.stage - 1] || ''}`, CSTATUS[c.contactStatus || 'active'], (c.tags || []).join(', '), txt(c.interests),
-      s.last || '', s.count, c.reorderPref && c.reorderPref !== 'undecided' ? REORDER[c.reorderPref] : '', txt(c.memo), dt(c.createdAt).slice(0, 10), dt(c.updatedAt)]; })];
-  out['만남'] = [['고객', '날짜', '시간', '장소·방식', '목적', '상태', '핵심 대화', '새롭게 알게 된 내용', '상대가 직접 말한 관심사',
-    '내가 제공한 가치', '다음 행동', '연락 예정일', '옷차림 코드', '수정일'],
-    ...[...db.meetings].sort((a, b) => (b.date || '').localeCompare(a.date || '')).map(m => {
-      const r = m.record || {}, d = r.detail || {}, fu = db.followups.find(x => x.meetingId === m.id) || {};
-      return [name(m.customerId), m.date, m.time, txt(m.place), txt(m.purpose), {planned: '예정', done: '완료', cancelled: '취소'}[m.status] || m.status,
-        txt(r.talk), txt(r.learned), txt(d.saidInterests), txt(d.valueGiven), txt(fu.action), fu.date || '', (m.style || {}).code || '', dt(m.updatedAt)]; })];
-  out['약속'] = [['고객', '종류', '내용', '약속한 날', '기한', '상태', '완료일', '일정 상태'],
-    ...db.promises.map(p => [name(p.customerId), '내 약속', txt(p.content), p.createdDate, p.dueDate, PSTATUS[p.status], p.doneDate || '', '']),
-    ...db.followups.map(f => [name(f.customerId), '후속 행동', txt(f.action), '', f.date, PSTATUS[f.status], '', SCHED[f.scheduleStatus] || '']),
-    ...db.plans.map(p => [name(p.customerId), '상대가 말한 계획', txt(p.content), p.date, '', '', '', ''])];
-  out['제품 기록'] = [['고객', '종류', '제품', '날짜', '내용', '금액·수량(수동 기록)'],
-    ...[...db.productEvents].sort((a, b) => (b.date || '').localeCompare(a.date || '')).map(e =>
-      [name(e.customerId), (PRODUCT_EV[e.type] || [e.type])[0], e.productName, e.date, txt(e.text), e.amount])];
-  out['메시지'] = [['고객', '상태', '보낼 날짜', '시간', '내용', '보낸 표시 시각'],
-    ...db.messages.map(x => [name(x.customerId), (MSG_STATUS[x.status] || [x.status])[0], x.scheduledDate, x.scheduledTime, txt(x.body), dt(x.sentAt)])];
-  out['제품 자료'] = [['제품', '분류', '사용 방법 안내', '자료 출처', '확인일', '메모'],
-    ...db.products.map(p => [p.name, p.category, p.guide, p.source, p.checkedDate, p.note])];
-  for (const k in out) out[k] = out[k].map(r => r.map(sheetCell));
-  return out;
-}
+
 /* ===== 노션 DB로 보내기 (앱 → 노션 직접 · 한 방향) =====
-   노션 키·연결 정보는 이 기기의 별도 저장 칸(NKEY)에만 두고, 백업 파일·구글 시트로는 보내지 않는다. */
+   노션 키·연결 정보는 이 기기의 별도 저장 칸(NKEY)에만 두고, 백업 파일에는 넣지 않는다. */
 const NKEY = 'meetcode_notion';
 const NOTION_AUTO_DELAY = 20000;
 // [DB 이름, 아이콘, [[칸 이름, 종류, 기록의 항목]]]  종류: title text date number select multi rel:대상DB
@@ -965,7 +877,7 @@ async function notionSync(){
   const s = nState();
   if (!s.key || !s.page) throw new Error('노션 키와 페이지 주소를 먼저 저장하세요.');
   const api = (m, p, b) => notionApi(s.key, m, p, b);
-  const stamp = sheetsStamp(), rec = notionRecords();
+  const stamp = dataStamp(), rec = notionRecords();
   const dbs = await notionEnsureDbs(api, s.page);
   // 노션에 이미 있는 페이지를 '앱 ID'로 찾는다 (이 기기 저장 공간이 지워져도 중복으로 만들지 않게)
   const pages = {};
@@ -1002,7 +914,7 @@ async function notionSync(){
   nPatch({sent, stamp, last: new Date().toISOString(), result: res, error: ''});
   return res;
 }
-function notionPending(){ const s = nState(); return !!(s.key && s.page) && s.stamp !== sheetsStamp(); }
+function notionPending(){ const s = nState(); return !!(s.key && s.page) && s.stamp !== dataStamp(); }
 function scheduleNotion(delay = NOTION_AUTO_DELAY){
   clearTimeout(notionTimer);
   if (!nState().auto || !notionPending()) return;
@@ -1030,7 +942,7 @@ function notionCard(){
       <li>https://www.notion.so/my-integrations 에서 <b>새 통합</b>을 만들고 <b>시크릿 키</b>(ntn_…)를 복사합니다.</li>
       <li>노션에서 DB를 둘 페이지를 열고 오른쪽 위 <b>••• → 연결 → 만든 통합</b>을 추가합니다.</li>
       <li>아래에 키와 그 페이지 주소를 넣고 저장한 뒤 <b>지금 노션으로 보내기</b>를 누릅니다. 페이지 아래에 DB 6개가 없으면 만들고, 있으면 그대로 씁니다.</li></ol>
-      <p class="small muted">노션 키는 <b>이 기기의 이 브라우저에만</b> 저장되고, 백업 파일과 구글 시트에는 들어가지 않습니다. 키는 다른 사람에게 보내지 마세요. 함께 쓰는 기기에서는 연결하지 마세요.</p></details>
+      <p class="small muted">노션 키는 <b>이 기기의 이 브라우저에만</b> 저장되고, 백업 파일에는 들어가지 않습니다. 키는 다른 사람에게 보내지 마세요. 함께 쓰는 기기에서는 연결하지 마세요.</p></details>
     <form data-form="notion" class="mt8" novalidate>
       ${fld('노션 키', 'key', '', {type: 'password', noOpt: true, ph: s.key ? '저장됨 (바꿀 때만 입력)' : 'ntn_…'})}
       ${fld('노션 페이지 주소', 'page', s.pageUrl || '', {noOpt: true, ph: 'https://www.notion.so/…'})}
@@ -1070,77 +982,6 @@ function notionRecords(){
     messages: db.messages.map(x => ({id: x.id, customerId: x.customerId, body: txt(x.body), status: (MSG_STATUS[x.status] || [x.status])[0],
       scheduledDate: x.scheduledDate || '', time: x.scheduledTime || '', sentAt: x.sentAt || ''})),
   };
-}
-async function sheetsSend(){
-  const url = db.settings.sheetsUrl;
-  if (!url) throw new Error('먼저 구글 시트 웹 앱 주소를 저장하세요.');
-  const stamp = sheetsStamp();
-  const body = JSON.stringify({token: sheetsToken(), app: db.settings.appName, sent_at: new Date().toISOString(), sheets: sheetsPayload()});
-  let res;
-  try {
-    // text/plain 으로 보내면 브라우저가 사전 확인 요청 없이 바로 보낸다 (Apps Script가 받을 수 있는 방식)
-    const r = await fetch(url, {method: 'POST', body, headers: {'Content-Type': 'text/plain;charset=utf-8'}, redirect: 'follow'});
-    if (!r.ok) throw new Error(`구글 시트가 요청을 받지 않았습니다(오류 ${r.status}). 웹 앱 주소와 배포 설정을 확인하세요.`);
-    try { res = JSON.parse(await r.text()); }
-    catch(e){ throw new Error("구글 시트의 응답을 읽지 못했습니다. 배포할 때 '액세스 권한: 모든 사용자'로 했는지 확인하세요."); }
-  } catch(err){
-    if (err instanceof TypeError) throw new Error(navigator.onLine === false ? '인터넷에 연결되어 있지 않습니다.'
-      : "구글 시트에 연결하지 못했습니다. 웹 앱 주소가 맞는지, 배포할 때 '액세스 권한: 모든 사용자'로 했는지 확인하세요.");
-    throw err;
-  }
-  if (!res || !res.ok){
-    if (res && res.error === 'token') throw new Error("토큰이 맞지 않습니다. '스크립트 복사'로 받은 코드를 다시 붙여 넣고 새 버전으로 배포하세요.");
-    if (res && res.error === 'busy') throw new Error('이전 보내기가 아직 진행 중입니다. 잠시 뒤 다시 시도하세요.');
-    throw new Error('구글 시트에서 오류가 났습니다. Apps Script 코드를 다시 붙여 넣고 배포해 보세요.');
-  }
-  commit(d => { d.settings.sheetsLastSync = new Date().toISOString(); d.settings.sheetsLastCounts = res.counts || {}; d.settings.sheetsStamp = stamp; d.settings.sheetsError = ''; });
-  return res.counts || {};
-}
-function sheetsPending(){ return !!db.settings.sheetsUrl && db.settings.sheetsStamp !== sheetsStamp(); }
-// '자동으로 보내기'를 켰으면, 기록을 저장할 때마다 잠시 기다렸다가 보낸다 (앱이 열려 있는 동안만).
-function scheduleSheets(delay = SHEETS_AUTO_DELAY){
-  clearTimeout(sheetsTimer);
-  if (!db.settings.sheetsAuto || !sheetsPending()) return;
-  sheetsTimer = setTimeout(autoSheets, delay);
-}
-async function autoSheets(){
-  if (sheetsBusy || !db.settings.sheetsAuto || !sheetsPending() || navigator.onLine === false) return;
-  sheetsBusy = true;
-  try { await sheetsSend(); }
-  catch(err){ commit(d => { d.settings.sheetsError = err.message; }); }
-  finally { sheetsBusy = false; }
-  if (location.hash.startsWith('#/more')) rerender();
-}
-function sheetsCard(){
-  const s = db.settings, counts = Object.entries(s.sheetsLastCounts || {}).map(([k, n]) => `${k} ${n}`).join(' · ');
-  return `<div class="card" id="sheets-card"><h3>구글 시트 연결 (보기·백업)</h3>
-    <p class="small muted" style="margin-top:0">고객·만남·약속·제품 기록·메시지를 <b>내 구글 시트</b>의 탭으로 보내 표로 볼 수 있습니다. 보낼 때마다 시트 내용을 새로 덮어쓰며, <b>시트에서 고친 내용은 앱에 반영되지 않습니다.</b> 사진은 보내지 않습니다.</p>
-    <p>${s.sheetsUrl ? '<span class="badge green">연결됨</span>' : '<span class="badge gray">연결 안 됨</span>'}
-      ${s.sheetsLastSync ? ` <span class="small muted">마지막 보내기 ${esc(new Date(s.sheetsLastSync).toLocaleString('ko-KR', {timeZone: 'Asia/Seoul'}))}${counts ? ' · ' + esc(counts) : ''}</span>` : ''}
-      ${sheetsPending() ? ' <span class="badge amber">보낸 뒤 바뀐 기록 있음</span>' : ''}</p>
-    ${s.sheetsError ? `<p class="small" style="color:var(--red)">자동 보내기 실패: ${esc(s.sheetsError)}</p>` : ''}
-    <details class="fold" ${s.sheetsUrl ? '' : 'open'}><summary>처음 연결하는 방법 (약 5분 · PC에서 하기를 권합니다)</summary><ol class="small">
-      <li>구글 드라이브에서 <b>새 구글 시트</b>를 만듭니다. (이름 예: 고객관리 백업)</li>
-      <li>시트 메뉴 <b>확장 프로그램 → Apps Script</b>를 엽니다.</li>
-      <li>아래 <b>스크립트 복사</b>를 누르고, Apps Script 편집기의 기존 코드를 모두 지운 뒤 붙여 넣고 저장합니다.</li>
-      <li>오른쪽 위 <b>배포 → 새 배포</b> → 톱니바퀴에서 <b>웹 앱</b> 선택 → 실행 사용자 <b>나</b>, 액세스 권한 <b>모든 사용자</b> → <b>배포</b>.</li>
-      <li>처음 한 번은 구글 계정 권한 허용 화면이 나옵니다. 내 계정을 고르고 허용합니다. ("확인되지 않은 앱" 안내가 나오면 <b>고급 → 이동</b>)</li>
-      <li>나오는 <b>웹 앱 URL</b>(https://script.google.com/… 으로 시작)을 복사해 아래 칸에 붙여 넣고 저장한 뒤, <b>지금 시트로 보내기</b>를 누릅니다.</li></ol>
-      <p class="small muted">스크립트 안의 비밀 토큰이 맞아야 시트가 기록을 받습니다. 스크립트 코드와 웹 앱 주소는 다른 사람에게 보내지 마세요.
-        휴대폰에서도 쓰려면, 휴대폰 앱의 더보기에서 같은 웹 앱 주소를 넣고 <b>그 기기의 스크립트로 다시 배포</b>하거나, 기기마다 시트를 따로 만드세요. (기기마다 토큰이 다릅니다)</p></details>
-    <div class="grid2 mt8"><button class="btn" type="button" data-act="sheet-copy">스크립트 복사</button>
-      <button class="btn" type="button" data-act="sheet-token">토큰 새로 만들기</button></div>
-    <form data-form="sheets" class="mt8" novalidate>
-      ${fld('웹 앱 주소', 'url', s.sheetsUrl || '', {ph: 'https://script.google.com/macros/s/…/exec'})}
-      <label class="small" style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" name="contact" ${s.sheetsContact ? 'checked' : ''}> 연락처도 함께 보내기 (기본: 빼고 보냄)</label>
-      <label class="small" style="display:flex;gap:8px;align-items:center;margin:6px 0 10px"><input type="checkbox" name="auto" ${s.sheetsAuto ? 'checked' : ''}> 기록을 저장하면 자동으로 보내기 (앱이 열려 있을 때)</label>
-      <div class="grid2"><button class="btn" type="submit">설정 저장</button>
-        <button class="btn primary" type="button" data-act="sheet-sync" ${s.sheetsUrl ? '' : 'disabled'}>지금 시트로 보내기</button></div></form>
-    <p class="muted small mt8" style="margin-bottom:0">구글 시트는 내 구글 계정에 저장됩니다. 고객 정보가 들어 있으니 시트를 다른 사람과 공유하지 마세요.</p></div>`;
-}
-async function copyText(t){
-  try { await navigator.clipboard.writeText(t); }
-  catch(e){ const x = Object.assign(document.createElement('textarea'), {value: t}); document.body.append(x); x.select(); document.execCommand('copy'); x.remove(); }
 }
 
 /* ===== 2차 기능: 제품 사용 관리 · 메시지 · 옷차림 · 사진 ===== */
@@ -1518,35 +1359,6 @@ const actions = {
   'msg-sent': el => {
     if (commit(d => { const x = d.messages.find(m => m.id === el.dataset.id); if (!x) return; const sent = x.status !== 'sent'; x.status = sent ? 'sent' : 'draft'; x.sentAt = sent ? new Date().toISOString() : null; })){ toast('표시했습니다.'); rerender(); }
   },
-  'sheet-copy': async () => { await copyText(sheetsScript()); toast('스크립트를 복사했습니다. Apps Script 편집기에 붙여 넣으세요.'); },
-  'sheet-token': async () => {
-    if (!confirm('토큰을 새로 만들면 지금 연결된 시트는 기록을 받지 못합니다. 새 스크립트를 다시 붙여 넣고 새 버전으로 배포해야 합니다. 계속할까요?')) return;
-    if (!commit(d => { delete d.settings.sheetsToken; })) return;
-    await copyText(sheetsScript());
-    toast('새 토큰으로 만든 스크립트를 복사했습니다. Apps Script에 다시 붙여 넣고 새 버전으로 배포하세요.');
-  },
-  'sheet-sync': async el => {
-    if (sheetsBusy) return;
-    sheetsBusy = true; el.disabled = true; el.textContent = '보내는 중…';
-    try {
-      const counts = await sheetsSend();
-      toast('구글 시트로 보냈습니다: ' + Object.entries(counts).map(([k, n]) => `${k} ${n}`).join(', '));
-    } catch(err){ toast(err.message, 'err'); }
-    finally { sheetsBusy = false; rerender(); }
-  },
-  'notion-sync': async el => {
-    if (notionBusy) return;
-    notionBusy = true; el.disabled = true; el.textContent = '보내는 중…';
-    try { const r = await notionSync(); toast('노션으로 보냈습니다: ' + notionResultText(r)); }
-    catch(err){ nPatch({error: err.message}); toast(err.message, 'err'); }
-    finally { notionBusy = false; rerender(); }
-  },
-  'notion-off': () => {
-    if (!confirm('이 기기에서 노션 키와 연결 정보를 지웁니다. 노션에 이미 쌓인 기록은 그대로 남습니다. 계속할까요?')) return;
-    clearTimeout(notionTimer);
-    try { localStorage.removeItem(NKEY); } catch(e){}
-    toast('노션 연결을 해제했습니다.'); rerender();
-  },
   'msg-del': el => {
     if (!confirm('이 메시지를 삭제할까요?')) return;
     if (commit(d => { d.messages = d.messages.filter(m => m.id !== el.dataset.id); })){ toast('메시지를 삭제했습니다.'); rerender(); }
@@ -1670,14 +1482,6 @@ const submits = {
     nPatch({key, page, pageUrl, auto: f.elements.auto.checked, error: '', ...(page !== s.page ? {sent: {}, stamp: '', last: null, result: null} : {})});
     toast('노션 연결을 저장했습니다. ‘지금 노션으로 보내기’를 눌러 확인해 보세요.'); rerender();
   },
-  sheets(f){
-    const url = f.elements.url.value.trim();
-    if (url && !url.startsWith(SHEETS_PREFIX)){ toast('웹 앱 주소는 https://script.google.com/ 으로 시작해야 합니다.', 'err'); return; }
-    if (commit(db => { Object.assign(db.settings, {sheetsUrl: url, sheetsContact: f.elements.contact.checked, sheetsAuto: f.elements.auto.checked, sheetsError: ''});
-      if (url !== db.settings.sheetsSavedUrl){ db.settings.sheetsStamp = ''; db.settings.sheetsSavedUrl = url; } })){
-      toast(url ? '시트 연결 설정을 저장했습니다. ‘지금 시트로 보내기’를 눌러 확인해 보세요.' : '시트 연결을 해제했습니다.'); rerender();
-    }
-  },
   stylesearch(f){ const v = f.elements.place.value.trim(); go('/styles' + (v ? '?place=' + encodeURIComponent(v) : '')); },
   product(f){
     const d = trimAll(formObj(f));
@@ -1767,11 +1571,10 @@ window.addEventListener('pagehide', () => saveDraft($('form[data-draft]')));
 document.addEventListener('visibilitychange', () => {
   if (document.hidden){   // 앱을 닫기 전에 남은 변경을 바로 보낸다
     saveDraft($('form[data-draft]'));
-    if (sheetsTimer){ clearTimeout(sheetsTimer); sheetsTimer = null; autoSheets(); }
     if (notionTimer){ clearTimeout(notionTimer); notionTimer = null; autoNotion(); }
-  } else { scheduleSheets(3000); scheduleNotion(3000); }
+  } else scheduleNotion(3000);
 });
-window.addEventListener('online', () => { scheduleSheets(3000); scheduleNotion(3000); });
+window.addEventListener('online', () => scheduleNotion(3000));
 window.addEventListener('hashchange', () => route());
 window.addEventListener('storage', e => { if (e.key === KEY){ load(); rerender(); } });
 $('#import-file').addEventListener('change', async e => {
@@ -1786,8 +1589,7 @@ $('#import-file').addEventListener('change', async e => {
 
 load();
 route();
-scheduleSheets(5000);   // 지난번에 못 보낸 변경이 있으면 앱을 열 때 보낸다
-scheduleNotion(5000);
+scheduleNotion(5000);   // 지난번에 못 보낸 변경이 있으면 앱을 열 때 보낸다
 // 브라우저가 저장 공간 부족 시 데이터를 임의로 지우지 않도록 요청한다 (지원 브라우저만).
 try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch(e){}
 </script>
